@@ -1,0 +1,9 @@
+{
+  "token": "TOKEN",
+  "guild_id": "1111111111111111111",
+  "lol_channel": "1111111111111111111",
+  "val_channel": "1111111111111111111",
+  "mod_roles": ["1111111111111111111"],
+  "data_update_timeout": 18000000,
+  "send_to_channel_timeout": 43200000
+}
