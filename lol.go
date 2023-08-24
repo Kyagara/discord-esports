@@ -140,9 +140,6 @@ func updateLOLData() error {
 		schedule[realDate][event.League.Name] = append(schedule[realDate][event.League.Name], gameData)
 	}
 
-	now := time.Now()
-	tomorrow := time.Date(now.Year(), now.Month(), now.Day()+1, 0, 0, 0, 0, now.Location())
-
 	for dateKey, entries := range schedule {
 		parsedTime, err := time.Parse("2006 01 02", dateKey)
 		if err != nil {
@@ -154,7 +151,6 @@ func updateLOLData() error {
 			continue
 		}
 
-		tomorrowDate = dateKey
 		for league, entryList := range entries {
 			for _, item := range entryList {
 				parsedTime, err = time.Parse("2006-01-02T15:04:05Z", item.Time)
@@ -208,14 +204,14 @@ func createLOLMessageEmbed() *discordgo.MessageEmbed {
 			continue
 		}
 
-		fields = append(fields, &discordgo.MessageEmbedField{Name: league, Value: output + fmt.Sprintf("[%v](%v)\n", league, getLOLUrlByLeague(games[0]))})
+		fields = append(fields, &discordgo.MessageEmbedField{Name: league, Value: output + fmt.Sprintf("[More about %v here](%v)\n", league, getLOLUrlByLeague(games[0]))})
 	}
 
 	if len(fields) == 0 {
-		return &discordgo.MessageEmbed{Title: fmt.Sprintf("League games on %v", strings.Replace(tomorrowDate, " ", "/", -1)), Description: "No games found :/"}
+		return &discordgo.MessageEmbed{Title: fmt.Sprintf("League games on %v", tomorrow.Format("2006/01/02")), Color: embedColor, Description: "No games found :/"}
 	}
 
-	return &discordgo.MessageEmbed{Title: fmt.Sprintf("League games on %v", strings.Replace(tomorrowDate, " ", "/", -1)), Color: 0x9b311a, Fields: fields}
+	return &discordgo.MessageEmbed{Title: fmt.Sprintf("League games on %v", tomorrow.Format("2006/01/02")), Color: embedColor, Fields: fields}
 }
 
 func getLOLUrlByLeague(leagueName LOLEsportsLeagueSchedule) string {

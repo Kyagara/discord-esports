@@ -107,9 +107,6 @@ func updateVALData() error {
 		schedule[realDate][tournament] = append(schedule[realDate][tournament], gameData)
 	}
 
-	now := time.Now()
-	tomorrow := time.Date(now.Year(), now.Month(), now.Day()+1, 0, 0, 0, 0, now.Location())
-
 	for dateKey, entries := range schedule {
 		parsedTime, err := time.Parse("2006 1 2", dateKey)
 		if err != nil {
@@ -121,7 +118,6 @@ func updateVALData() error {
 			continue
 		}
 
-		tomorrowDate = dateKey
 		for tournament, entryList := range entries {
 			for _, item := range entryList {
 				i, err := strconv.ParseInt(fmt.Sprintf("%v", item.Time), 10, 64)
@@ -182,10 +178,10 @@ func createVALMessageEmbed() *discordgo.MessageEmbed {
 	}
 
 	if len(fields) == 0 {
-		return &discordgo.MessageEmbed{Title: fmt.Sprintf("Valorant games on %v", strings.Replace(tomorrowDate, " ", "/", -1)), Description: "No games found :/"}
+		return &discordgo.MessageEmbed{Title: fmt.Sprintf("Valorant games on %v", tomorrow.Format("2006/01/02")), Color: embedColor, Description: "No games found :/"}
 	}
 
-	return &discordgo.MessageEmbed{Title: fmt.Sprintf("Valorant games on %v", strings.Replace(tomorrowDate, " ", "/", -1)), Color: 0x9b311a, Fields: fields}
+	return &discordgo.MessageEmbed{Title: fmt.Sprintf("Valorant games on %v", tomorrow.Format("2006/01/02")), Color: embedColor, Fields: fields}
 }
 
 func sendVALEmbed() error {

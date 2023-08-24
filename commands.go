@@ -80,24 +80,29 @@ func removeCommands() error {
 var (
 	commands = []*discordgo.ApplicationCommand{
 		{
-			Name:        "lol",
-			Description: "Send a list of upcoming LOL games.",
+			Name:                     "lol",
+			Description:              "Send a list of upcoming League of Legends games.",
+			DescriptionLocalizations: &map[discordgo.Locale]string{discordgo.PortugueseBR: "Envia uma lista de próximos jogos de League of Legends."},
 		},
 		{
-			Name:        "val",
-			Description: "Send a list of upcoming VAL games.",
+			Name:                     "val",
+			Description:              "Send a list of upcoming Valorant games.",
+			DescriptionLocalizations: &map[discordgo.Locale]string{discordgo.PortugueseBR: "Envia uma lista de próximos jogos de Valorant."},
 		},
 		{
-			Name:        "update",
-			Description: "Force all data to update.",
+			Name:                     "update",
+			Description:              "Force all data to update.",
+			DescriptionLocalizations: &map[discordgo.Locale]string{discordgo.PortugueseBR: "Força todos os dados a serem atualizados."},
 		},
 		{
-			Name:        "info",
-			Description: "Send information about the bot, including last updates.",
+			Name:                     "info",
+			Description:              "Send information about the bot.",
+			DescriptionLocalizations: &map[discordgo.Locale]string{discordgo.PortugueseBR: "Envia informação sobre o bot."},
 		},
 		{
-			Name:        "post",
-			Description: "Force all data to be sent again in their respective channels.",
+			Name:                     "post",
+			Description:              "Force all data to be sent again.",
+			DescriptionLocalizations: &map[discordgo.Locale]string{discordgo.PortugueseBR: "Força todos os dados a serem enviados."},
 		},
 	}
 

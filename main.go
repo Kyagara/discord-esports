@@ -14,15 +14,18 @@ var (
 	registerFlag = flag.Bool("register", false, "Register commands to the guild specified in the config files.")
 	removeFlag   = flag.Bool("remove", false, "Remove commands to the guild specified in the config files.")
 
-	session      *discordgo.Session
-	config       BotConfiguration = BotConfiguration{}
-	lastUpdate   time.Time
-	lastPost     time.Time
-	tomorrowDate string = ""
+	session    *discordgo.Session
+	config     Configuration = Configuration{}
+	lastUpdate time.Time
+	lastPost   time.Time
+	now        time.Time
+	tomorrow   time.Time
 
 	lolSchedule map[string][]LOLEsportsLeagueSchedule     = make(map[string][]LOLEsportsLeagueSchedule)
 	valSchedule map[string][]VALEsportsTournamentSchedule = make(map[string][]VALEsportsTournamentSchedule)
 )
+
+const embedColor int = 0xff3838
 
 func init() { flag.Parse() }
 
@@ -84,6 +87,7 @@ func ticker() {
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, os.Interrupt)
 
+	// The first update/send is done in the ready event, there would be a race condition if it was done by the ticker
 	firstUpdate := true
 	firstSend := true
 

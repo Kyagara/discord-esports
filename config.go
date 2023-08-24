@@ -7,7 +7,7 @@ import (
 	"os"
 )
 
-type BotConfiguration struct {
+type Configuration struct {
 	Token                string   `json:"token"`
 	GuildID              string   `json:"guild_id"`
 	LOLChannel           string   `json:"lol_channel"`
@@ -29,7 +29,7 @@ func loadConfig() error {
 	}
 
 	if len(config.ModRoles) == 0 {
-		log.Print("You have not set any mod_roles, anyone will be able to use the post and update commands.")
+		log.Print("You have not set any mod_roles, anyone will be able to use the post and update commands, this can be abused.")
 	}
 
 	return nil
