@@ -197,7 +197,9 @@ func createLOLMessageEmbed() *discordgo.MessageEmbed {
 				continue
 			}
 
-			output += fmt.Sprintf("%v vs %v, <t:%v:R>\n", game.TeamA, game.TeamB, date.UnixMilli()/1000)
+			if date.After(now) {
+				output += fmt.Sprintf("%v vs %v, <t:%v:R>.\n", game.TeamA, game.TeamB, date.UnixMilli()/1000)
+			}
 		}
 
 		if len(strings.TrimSpace(output)) == 0 {
@@ -208,6 +210,7 @@ func createLOLMessageEmbed() *discordgo.MessageEmbed {
 	}
 
 	if len(fields) == 0 {
+		log.Print("No LOL games found.")
 		return &discordgo.MessageEmbed{Title: fmt.Sprintf("League games on %v", tomorrow.Format("2006/01/02")), Color: embedColor, Description: "No games found :/"}
 	}
 

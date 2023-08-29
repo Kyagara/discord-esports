@@ -79,7 +79,6 @@ func updateVALData() error {
 		gameData := VALEsportsTournamentSchedule{
 			Tournament: segment.TournamentName,
 			RoundInfo:  segment.RoundInfo,
-			URL:        segment.MatchPage,
 			Time:       segment.UnixTimestamp,
 			TeamA:      segment.Team1,
 			TeamB:      segment.Team2,
@@ -167,7 +166,9 @@ func createVALMessageEmbed() *discordgo.MessageEmbed {
 			}
 
 			date := time.Unix(i, 0)
-			output += fmt.Sprintf("%v vs %v, <t:%v:R> - [Link](%v)\n", game.TeamA, game.TeamB, date.UnixMilli()/1000, game.URL)
+			if date.After(now) {
+				output += fmt.Sprintf("%v vs %v, <t:%v:R>.\n", game.TeamA, game.TeamB, date.UnixMilli()/1000)
+			}
 		}
 
 		if len(strings.TrimSpace(output)) == 0 {
@@ -178,8 +179,11 @@ func createVALMessageEmbed() *discordgo.MessageEmbed {
 	}
 
 	if len(fields) == 0 {
+		log.Print("No VAL games found.")
 		return &discordgo.MessageEmbed{Title: fmt.Sprintf("Valorant games on %v", tomorrow.Format("2006/01/02")), Color: embedColor, Description: "No games found :/"}
 	}
+
+	fields = append(fields, &discordgo.MessageEmbedField{Name: "Upcoming matches", Value: "[Check all upcoming matches here](https://www.vlr.gg/matches)"})
 
 	return &discordgo.MessageEmbed{Title: fmt.Sprintf("Valorant games on %v", tomorrow.Format("2006/01/02")), Color: embedColor, Fields: fields}
 }
