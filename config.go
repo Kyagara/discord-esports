@@ -8,13 +8,13 @@ import (
 )
 
 type Configuration struct {
-	Token                string   `json:"token"`
-	GuildID              string   `json:"guild_id"`
-	LOLChannel           string   `json:"lol_channel"`
-	VALChannel           string   `json:"val_channel"`
-	ModRoles             []string `json:"mod_roles"`
-	DataUpdateTimeout    int      `json:"data_update_timeout"`
-	SendToChannelTimeout int      `json:"send_to_channel_timeout"`
+	Token           string   `json:"token"`
+	GuildID         string   `json:"guild_id"`
+	LOLChannel      string   `json:"lol_channel"`
+	VALChannel      string   `json:"val_channel"`
+	ModRoles        []string `json:"mod_roles"`
+	UpdateDateTimer int      `json:"update_data_timer"`
+	PostDataTimer   int      `json:"post_data_timer"`
 }
 
 func loadConfig() error {

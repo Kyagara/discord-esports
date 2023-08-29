@@ -18,6 +18,7 @@ var (
 	config     Configuration = Configuration{}
 	lastUpdate time.Time
 	lastPost   time.Time
+	started    time.Time = time.Now()
 	now        time.Time
 	tomorrow   time.Time
 
@@ -78,11 +79,11 @@ func main() {
 }
 
 func ticker() {
-	sender := time.NewTicker(time.Duration(config.SendToChannelTimeout * int(time.Millisecond)))
-	defer sender.Stop()
+	post := time.NewTicker(time.Duration(config.PostDataTimer * int(time.Millisecond)))
+	defer post.Stop()
 
-	updater := time.NewTicker(time.Duration(config.DataUpdateTimeout * int(time.Millisecond)))
-	defer updater.Stop()
+	update := time.NewTicker(time.Duration(config.UpdateDateTimer * int(time.Millisecond)))
+	defer update.Stop()
 
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, os.Interrupt)
@@ -97,7 +98,7 @@ loop:
 		case <-stop:
 			log.Print("Shutting down.")
 			break loop
-		case <-updater.C:
+		case <-update.C:
 			if !firstUpdate {
 				err := updateAllData()
 				if err != nil {
@@ -107,7 +108,7 @@ loop:
 
 			firstUpdate = false
 
-		case <-sender.C:
+		case <-post.C:
 			if !firstSend {
 				err := postAllData()
 				if err != nil {
