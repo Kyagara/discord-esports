@@ -11,7 +11,7 @@ func newRequest(endpoint string) (*http.Request, error) {
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Set("User-Agent", "discord-esports-bot")
+	req.Header.Set("User-Agent", "discord-esports-bot - https://github.com/Kyagara/discord-esports")
 	return req, nil
 }
 
