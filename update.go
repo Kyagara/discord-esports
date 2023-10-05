@@ -12,16 +12,11 @@ func UpdateCommand(session *discordgo.Session, interaction *discordgo.Interactio
 	if hasPermissions(session, interaction) {
 		err := updateAllData()
 		if err != nil {
-			respondWithErrorEmbed(interaction.Interaction, err)
+			respondWithError(interaction.Interaction, err)
 			return
 		}
 
-		session.InteractionRespond(interaction.Interaction, &discordgo.InteractionResponse{
-			Type: discordgo.InteractionResponseChannelMessageWithSource,
-			Data: &discordgo.InteractionResponseData{
-				Content: "Updated all data without any errors.", Flags: discordgo.MessageFlagsEphemeral,
-			},
-		})
+		respondWithMessage(interaction.Interaction, "Updated all data without any errors.")
 	}
 }
 

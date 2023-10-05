@@ -13,21 +13,30 @@ import (
 func ChampionCommand(session *discordgo.Session, interaction *discordgo.InteractionCreate) {
 	options := interaction.ApplicationCommandData().Options
 
-	if interaction.Type == discordgo.InteractionApplicationCommandAutocomplete {
-		if champions == nil || time.Since(versionUpdated) > 4*time.Minute {
-			ddVersion, err := dd.DataDragon.Version.Latest()
-			if err != nil {
-				respondWithErrorEmbed(interaction.Interaction, err)
-				return
-			}
+	notUpToDate := time.Since(versionUpdated) > 4*time.Minute
 
-			champions, err = dd.DataDragon.Champion.AllChampions(ddVersion, data_dragon.EnUS)
-			if err != nil {
-				respondWithErrorEmbed(interaction.Interaction, err)
-				return
-			}
+	if len(championsNames) == 0 || notUpToDate {
+		ddVersion, err := dd.DataDragon.Version.Latest()
+		if err != nil {
+			respondWithError(interaction.Interaction, err)
+			return
 		}
 
+		versionUpdated = time.Now()
+
+		champions, err = dd.DataDragon.Champion.AllChampions(ddVersion, data_dragon.EnUS)
+		if err != nil {
+			respondWithError(interaction.Interaction, err)
+			return
+		}
+
+		championsNames = []string{}
+		for _, c := range champions {
+			championsNames = append(championsNames, c.ID)
+		}
+	}
+
+	if interaction.Type == discordgo.InteractionApplicationCommandAutocomplete {
 		var filteredNames []string
 		for _, c := range championsNames {
 			if strings.HasPrefix(c, options[0].StringValue()) {
@@ -59,24 +68,10 @@ func ChampionCommand(session *discordgo.Session, interaction *discordgo.Interact
 		return
 	}
 
-	ddVersion, err := dd.DataDragon.Version.Latest()
-	if err != nil {
-		respondWithErrorEmbed(interaction.Interaction, err)
-		return
-	}
-
-	versionUpdated = time.Now()
-
-	champions, err = dd.DataDragon.Champion.AllChampions(ddVersion, data_dragon.EnUS)
-	if err != nil {
-		respondWithErrorEmbed(interaction.Interaction, err)
-		return
-	}
-
 	champion := champions[options[0].StringValue()]
 
 	if champion == nil {
-		respondWithErrorEmbed(interaction.Interaction, fmt.Errorf("champion '%s' not found", options[0].StringValue()))
+		respondWithError(interaction.Interaction, fmt.Errorf("champion '%s' not found", options[0].StringValue()))
 		return
 	}
 
@@ -103,10 +98,5 @@ func ChampionCommand(session *discordgo.Session, interaction *discordgo.Interact
 		Footer: &discordgo.MessageEmbedFooter{Text: strings.Join(champion.Tags, ", ")},
 	}
 
-	session.InteractionRespond(interaction.Interaction, &discordgo.InteractionResponse{
-		Type: discordgo.InteractionResponseChannelMessageWithSource,
-		Data: &discordgo.InteractionResponseData{
-			Embeds: []*discordgo.MessageEmbed{embed},
-		},
-	})
+	respondWithEmbed(interaction.Interaction, []*discordgo.MessageEmbed{embed})
 }

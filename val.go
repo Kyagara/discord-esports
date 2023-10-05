@@ -41,12 +41,7 @@ type VALEsportsTournamentSchedule struct {
 }
 
 func VALEsportsCommand(session *discordgo.Session, interaction *discordgo.InteractionCreate) {
-	session.InteractionRespond(interaction.Interaction, &discordgo.InteractionResponse{
-		Type: discordgo.InteractionResponseChannelMessageWithSource,
-		Data: &discordgo.InteractionResponseData{
-			Embeds: []*discordgo.MessageEmbed{createVALMessageEmbed()},
-		},
-	})
+	respondWithEmbed(interaction.Interaction, []*discordgo.MessageEmbed{createVALMessageEmbed()})
 }
 
 func updateVALData() error {

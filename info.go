@@ -20,10 +20,5 @@ func InfoCommand(session *discordgo.Session, interaction *discordgo.InteractionC
 		{Name: "Commands", Value: strings.Join(cmds, ", ")},
 		{Name: "Source code", Value: "[Github](https://github.com/Kyagara/discord-esports)"}}}
 
-	session.InteractionRespond(interaction.Interaction, &discordgo.InteractionResponse{
-		Type: discordgo.InteractionResponseChannelMessageWithSource,
-		Data: &discordgo.InteractionResponseData{
-			Embeds: []*discordgo.MessageEmbed{embed},
-		},
-	})
+	respondWithEmbed(interaction.Interaction, []*discordgo.MessageEmbed{embed})
 }

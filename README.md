@@ -11,6 +11,7 @@ This bot uses the Lolesports api and [vlrggapi](https://github.com/axsddlr/vlrgg
 - update - Force all data to update. User needs mod roles set in `config.json`.
 - post - Force all posts to be sent again. User needs mod roles set in `config.json`.
 - info - Send information about the bot, includes link for this page, the last time data was updated and posted and all commands.
+- champion - Sends stats for a champion, includes links for a wiki and LoLalytics page.
 
 ## Setup
 

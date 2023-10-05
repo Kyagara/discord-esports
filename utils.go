@@ -29,25 +29,49 @@ func hasPermissions(session *discordgo.Session, interaction *discordgo.Interacti
 		}
 	}
 
-	session.InteractionRespond(interaction.Interaction, &discordgo.InteractionResponse{
-		Type: discordgo.InteractionResponseChannelMessageWithSource,
-		Data: &discordgo.InteractionResponseData{
-			Content: "You don't have permission to run this command.",
-			Flags:   discordgo.MessageFlagsEphemeral,
-		},
-	})
-
+	respondWithMessage(interaction.Interaction, "You don't have permission to run this command.")
 	return false
 }
 
-func respondWithErrorEmbed(interaction *discordgo.Interaction, err error) {
+func respondWithError(interaction *discordgo.Interaction, err error) {
 	log.Printf("Error executing command: %v", err)
 
-	session.InteractionRespond(interaction, &discordgo.InteractionResponse{
+	err = session.InteractionRespond(interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
 			Content: "Error executing command.",
 			Flags:   discordgo.MessageFlagsEphemeral,
 		},
 	})
+
+	if err != nil {
+		log.Printf("Error responding with error: %v", err)
+	}
+}
+
+func respondWithEmbed(interaction *discordgo.Interaction, embed []*discordgo.MessageEmbed) {
+	err := session.InteractionRespond(interaction, &discordgo.InteractionResponse{
+		Type: discordgo.InteractionResponseChannelMessageWithSource,
+		Data: &discordgo.InteractionResponseData{
+			Embeds: embed,
+		},
+	})
+
+	if err != nil {
+		log.Printf("Error responding with embed: %v", err)
+	}
+}
+
+func respondWithMessage(interaction *discordgo.Interaction, message string) {
+	err := session.InteractionRespond(interaction, &discordgo.InteractionResponse{
+		Type: discordgo.InteractionResponseChannelMessageWithSource,
+		Data: &discordgo.InteractionResponseData{
+			Content: message,
+			Flags:   discordgo.MessageFlagsEphemeral,
+		},
+	})
+
+	if err != nil {
+		log.Printf("Error responding with message: %v", err)
+	}
 }
