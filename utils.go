@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/bwmarrin/discordgo"
@@ -31,9 +32,22 @@ func hasPermissions(session *discordgo.Session, interaction *discordgo.Interacti
 	session.InteractionRespond(interaction.Interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
-			Content: "You don't have permission to run this command.", Flags: discordgo.MessageFlagsEphemeral,
+			Content: "You don't have permission to run this command.",
+			Flags:   discordgo.MessageFlagsEphemeral,
 		},
 	})
 
 	return false
+}
+
+func respondWithErrorEmbed(interaction *discordgo.Interaction, err error) {
+	log.Printf("Error executing command: %v", err)
+
+	session.InteractionRespond(interaction, &discordgo.InteractionResponse{
+		Type: discordgo.InteractionResponseChannelMessageWithSource,
+		Data: &discordgo.InteractionResponseData{
+			Content: "Error executing command.",
+			Flags:   discordgo.MessageFlagsEphemeral,
+		},
+	})
 }

@@ -11,12 +11,7 @@ func PostCommand(session *discordgo.Session, interaction *discordgo.InteractionC
 	if hasPermissions(session, interaction) {
 		err := postAllData()
 		if err != nil {
-			session.InteractionRespond(interaction.Interaction, &discordgo.InteractionResponse{
-				Type: discordgo.InteractionResponseChannelMessageWithSource,
-				Data: &discordgo.InteractionResponseData{
-					Content: err.Error(), Flags: discordgo.MessageFlagsEphemeral,
-				},
-			})
+			respondWithErrorEmbed(interaction.Interaction, err)
 			return
 		}
 

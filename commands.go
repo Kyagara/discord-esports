@@ -73,6 +73,20 @@ func removeCommands() error {
 		log.Printf("Deleted '%v' command.", cmd.Name)
 	}
 
+	registeredCommands, err = session.ApplicationCommands(session.State.User.ID, "")
+	if err != nil {
+		return fmt.Errorf("error fetching registered global commands: %v", err)
+	}
+
+	for _, cmd := range registeredCommands {
+		err := session.ApplicationCommandDelete(session.State.User.ID, "", cmd.ID)
+		if err != nil {
+			return fmt.Errorf("error deleting global '%v' command: %v", cmd.Name, err)
+		}
+
+		log.Printf("Deleted global '%v' command.", cmd.Name)
+	}
+
 	log.Print("Commands removed.")
 	return nil
 }
@@ -104,13 +118,29 @@ var (
 			Description:              "Force all data to be sent again.",
 			DescriptionLocalizations: &map[discordgo.Locale]string{discordgo.PortugueseBR: "Força todos os dados a serem enviados."},
 		},
+		{
+			Name:                     "champion",
+			Description:              "Get League of Legends champion stats.",
+			DescriptionLocalizations: &map[discordgo.Locale]string{discordgo.PortugueseBR: "Envia informações de um champion de League of Legends."},
+			Options: []*discordgo.ApplicationCommandOption{
+				{
+					Name:                     "champion",
+					Required:                 true,
+					Autocomplete:             true,
+					Type:                     discordgo.ApplicationCommandOptionString,
+					Description:              "Champion name with capitalization.",
+					DescriptionLocalizations: map[discordgo.Locale]string{discordgo.PortugueseBR: "Nome do champion com capitalização."},
+				},
+			},
+		},
 	}
 
 	commandHandlers = map[string]func(session *discordgo.Session, interaction *discordgo.InteractionCreate){
-		"lol":    LOLEsportsCommand,
-		"val":    VALEsportsCommand,
-		"update": UpdateCommand,
-		"info":   InfoCommand,
-		"post":   PostCommand,
+		"lol":      LOLEsportsCommand,
+		"val":      VALEsportsCommand,
+		"update":   UpdateCommand,
+		"info":     InfoCommand,
+		"post":     PostCommand,
+		"champion": ChampionCommand,
 	}
 )

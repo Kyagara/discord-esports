@@ -7,6 +7,8 @@ import (
 	"os/signal"
 	"time"
 
+	"github.com/Kyagara/equinox"
+	"github.com/Kyagara/equinox/clients/data_dragon"
 	"github.com/bwmarrin/discordgo"
 )
 
@@ -14,7 +16,14 @@ var (
 	registerFlag = flag.Bool("register", false, "Register commands to the guild specified in the config files.")
 	removeFlag   = flag.Bool("remove", false, "Remove commands to the guild specified in the config files.")
 
-	session    *discordgo.Session
+	session *discordgo.Session
+
+	dd             *equinox.Equinox
+	ddVersion      string
+	champions      map[string]*data_dragon.ChampionData
+	championsNames []string
+	versionUpdated time.Time
+
 	config     Configuration = Configuration{}
 	lastUpdate time.Time
 	lastPost   time.Time
@@ -54,6 +63,11 @@ func init() {
 			log.Fatal(err)
 		}
 		os.Exit(0)
+	}
+
+	dd, err = equinox.NewClient("data_dragon")
+	if err != nil {
+		log.Fatalf("Error starting equinox client: %v", err)
 	}
 
 	session, err = discordgo.New("Bot " + config.Token)

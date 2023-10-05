@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/Kyagara/equinox/clients/data_dragon"
 	"github.com/bwmarrin/discordgo"
 )
 
@@ -11,12 +12,7 @@ func UpdateCommand(session *discordgo.Session, interaction *discordgo.Interactio
 	if hasPermissions(session, interaction) {
 		err := updateAllData()
 		if err != nil {
-			session.InteractionRespond(interaction.Interaction, &discordgo.InteractionResponse{
-				Type: discordgo.InteractionResponseChannelMessageWithSource,
-				Data: &discordgo.InteractionResponseData{
-					Content: err.Error(), Flags: discordgo.MessageFlagsEphemeral,
-				},
-			})
+			respondWithErrorEmbed(interaction.Interaction, err)
 			return
 		}
 
@@ -41,6 +37,23 @@ func updateAllData() error {
 	err = updateVALData()
 	if err != nil {
 		return fmt.Errorf("error updating VAL data: %v", err)
+	}
+
+	ddVersion, err = dd.DataDragon.Version.Latest()
+	if err != nil {
+		return fmt.Errorf("error updating data dragon version: %v", err)
+	}
+
+	versionUpdated = time.Now()
+
+	champions, err = dd.DataDragon.Champion.AllChampions(ddVersion, data_dragon.EnUS)
+	if err != nil {
+		return fmt.Errorf("error updating champions data: %v", err)
+	}
+
+	championsNames = []string{}
+	for _, c := range champions {
+		championsNames = append(championsNames, c.ID)
 	}
 
 	lastUpdate = time.Now()
