@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/Kyagara/equinox"
-	"github.com/Kyagara/equinox/clients/data_dragon"
+	"github.com/Kyagara/equinox/clients/ddragon"
 	"github.com/bwmarrin/discordgo"
 )
 
@@ -20,7 +20,7 @@ var (
 
 	dd             *equinox.Equinox
 	ddVersion      string
-	champions      map[string]*data_dragon.ChampionData
+	champions      map[string]ddragon.ChampionData
 	championsNames []string
 	versionUpdated time.Time
 

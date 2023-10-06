@@ -1,5 +1,9 @@
 github.com/Kyagara/equinox v0.16.0 h1:o9jy7E8rfTTJNDnScPFUu3RsnLveC6oZEwnZ6QulbyM=
 github.com/Kyagara/equinox v0.16.0/go.mod h1:9dfnXMDxKanGhgO4WB/s1KeAkGRKse0Rr8DqGbWQTt0=
+github.com/Kyagara/equinox v0.16.1-0.20231006001614-65efee3d4dd7 h1:pXNO7mr9nj/OjqS15K48lJ7XL8uNFrPyEftXUFXzDLA=
+github.com/Kyagara/equinox v0.16.1-0.20231006001614-65efee3d4dd7/go.mod h1:9dfnXMDxKanGhgO4WB/s1KeAkGRKse0Rr8DqGbWQTt0=
+github.com/Kyagara/equinox v0.16.1-0.20231006195547-e281162e0a81 h1:CuxNt7m9KIAUlLNhtYgw9pTeV9LHdDgW5fXBgur9kms=
+github.com/Kyagara/equinox v0.16.1-0.20231006195547-e281162e0a81/go.mod h1:9dfnXMDxKanGhgO4WB/s1KeAkGRKse0Rr8DqGbWQTt0=
 github.com/allegro/bigcache/v3 v3.1.0 h1:H2Vp8VOvxcrB91o86fUSVJFqeuz8kpyyB02eH3bSzwk=
 github.com/allegro/bigcache/v3 v3.1.0/go.mod h1:aPyh7jEvrog9zAwx5N7+JUQX5dZTSGpxF1LAR4dr35I=
 github.com/bwmarrin/discordgo v0.27.1 h1:ib9AIc/dom1E/fSIulrBwnez0CToJE113ZGt4HoliGY=

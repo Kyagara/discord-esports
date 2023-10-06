@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/Kyagara/equinox/clients/data_dragon"
+	"github.com/Kyagara/equinox/clients/ddragon"
 	"github.com/bwmarrin/discordgo"
 )
 
@@ -34,14 +34,14 @@ func updateAllData() error {
 		return fmt.Errorf("error updating VAL data: %v", err)
 	}
 
-	ddVersion, err = dd.DataDragon.Version.Latest()
+	ddVersion, err = dd.DDragon.Version.Latest()
 	if err != nil {
 		return fmt.Errorf("error updating data dragon version: %v", err)
 	}
 
 	versionUpdated = time.Now()
 
-	champions, err = dd.DataDragon.Champion.AllChampions(ddVersion, data_dragon.EnUS)
+	champions, err = dd.DDragon.Champion.AllChampions(ddVersion, ddragon.EnUS)
 	if err != nil {
 		return fmt.Errorf("error updating champions data: %v", err)
 	}

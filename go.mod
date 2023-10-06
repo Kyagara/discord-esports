@@ -5,7 +5,7 @@ go 1.20
 require github.com/bwmarrin/discordgo v0.27.1
 
 require (
-	github.com/Kyagara/equinox v0.16.0 // indirect
+	github.com/Kyagara/equinox v0.16.1-0.20231006195547-e281162e0a81 // indirect
 	github.com/allegro/bigcache/v3 v3.1.0 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
