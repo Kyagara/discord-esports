@@ -107,7 +107,6 @@ func ChampionCommand(session *discordgo.Session, interaction *discordgo.Interact
 			{Name: "Attack damage", Value: fmt.Sprintf("``%v | %v per lvl``", champion.Stats.AttackDamage, champion.Stats.AttackDamagePerLevel), Inline: true},
 			{Name: "Attack speed", Value: fmt.Sprintf("``%v | %v per lvl``", champion.Stats.AttackSpeed, champion.Stats.AttackSpeedPerLevel), Inline: true},
 			{Name: "Crit", Value: fmt.Sprintf("``%v | %v per lvl``", champion.Stats.Crit, champion.Stats.CritPerLevel), Inline: true},
-			{Name: "Resource", Value: fmt.Sprintf("``%v``", champion.Partype), Inline: true},
 
 			{Name: "Cooldowns", Value: fmt.Sprintf("``%v\n%v\n%v\n%v``", cds[0], cds[1], cds[2], cds[3])},
 
