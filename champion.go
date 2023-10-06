@@ -81,12 +81,15 @@ func ChampionCommand(session *discordgo.Session, interaction *discordgo.Interact
 		return
 	}
 
-	cds := []string{"Q - %v/%v/%v/%v/%v/%v", "W - %v/%v/%v/%v/%v/%v", "E - %v/%v/%v/%v/%v/%v", "R - %v/%v/%v/%v/%v/%v"}
+	cds := []string{"Q - %v/%v/%v/%v/%v", "W - %v/%v/%v/%v/%v", "E - %v/%v/%v/%v/%v", "R - %v/%v/%v"}
 
-	for i := 0; i < 4; i++ {
+	for i := 0; i < 3; i++ {
 		cd := data.Spells[i].CooldownCoefficients
-		cds[i] = fmt.Sprintf(cds[i], cd[0], cd[1], cd[2], cd[3], cd[4], cd[5])
+		cds[i] = fmt.Sprintf(cds[i], cd[0], cd[1], cd[2], cd[3], cd[4])
 	}
+
+	cd := data.Spells[3].CooldownCoefficients
+	cds[3] = fmt.Sprintf(cds[3], cd[0], cd[1], cd[2])
 
 	embed := &discordgo.MessageEmbed{
 		Title: fmt.Sprintf("%s, %s", champion.Name, champion.Title),
@@ -104,8 +107,9 @@ func ChampionCommand(session *discordgo.Session, interaction *discordgo.Interact
 			{Name: "Attack damage", Value: fmt.Sprintf("``%v | %v per lvl``", champion.Stats.AttackDamage, champion.Stats.AttackDamagePerLevel), Inline: true},
 			{Name: "Attack speed", Value: fmt.Sprintf("``%v | %v per lvl``", champion.Stats.AttackSpeed, champion.Stats.AttackSpeedPerLevel), Inline: true},
 			{Name: "Crit", Value: fmt.Sprintf("``%v | %v per lvl``", champion.Stats.Crit, champion.Stats.CritPerLevel), Inline: true},
+			{Name: "Resource", Value: fmt.Sprintf("``%v``", champion.Partype), Inline: true},
 
-			{Name: "Cooldowns", Value: fmt.Sprintf("``%v\n%v\n%v\n%v``", cds[0], cds[1], cds[2], cds[3]), Inline: true},
+			{Name: "Cooldowns", Value: fmt.Sprintf("``%v\n%v\n%v\n%v``", cds[0], cds[1], cds[2], cds[3])},
 
 			{Name: "Range", Value: fmt.Sprintf("``%v``", champion.Stats.AttackRange), Inline: true},
 			{Name: "Movement", Value: fmt.Sprintf("``%v``", champion.Stats.MovementSpeed), Inline: true},
