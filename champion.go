@@ -163,7 +163,6 @@ func ChampionCommand(session *discordgo.Session, interaction *discordgo.Interact
 	fields = append(fields, &discordgo.MessageEmbedField{Name: "", Value: ""})
 	fields = append(fields, &discordgo.MessageEmbedField{Name: "Cooldown", Value: fmt.Sprintf("``Q - %v\nW - %v\nE - %v\nR - %v``", cds[0], cds[1], cds[2], cds[3]), Inline: true})
 	fields = append(fields, &discordgo.MessageEmbedField{Name: "Spell Cost", Value: fmt.Sprintf("``Q - %v\nW - %v\nE - %v\nR - %v``", spellCosts[0], spellCosts[1], spellCosts[2], spellCosts[3]), Inline: true})
-	fields = append(fields, &discordgo.MessageEmbedField{Name: "", Value: ""})
 	fields = append(fields, &discordgo.MessageEmbedField{Name: "Spell Range", Value: fmt.Sprintf("``Q - %v\nW - %v\nE - %v\nR - %v``", spellRanges[0], spellRanges[1], spellRanges[2], spellRanges[3]), Inline: true})
 
 	fields = append(fields, &discordgo.MessageEmbedField{Name: "", Value: ""})
