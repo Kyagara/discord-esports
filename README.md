@@ -30,8 +30,6 @@ https://discord.com/api/oauth2/authorize?client_id=BOT_ID&permissions=18432&scop
 
 Edit the `config.json.example` and rename it to just `config.json`.
 
-If a guild_id is not provided, the bot will register commands as global commands.
-
 If mod_roles is empty, anyone will be able to use the `post` and `update` commands.
 
 ### Running

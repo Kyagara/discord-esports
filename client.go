@@ -29,15 +29,39 @@ type Configuration struct {
 	PostDataTimer   int      `json:"post_data_timer"`
 }
 
-func (c *Configuration) loadConfig() error {
+func (config *Configuration) loadConfig() error {
 	bytes, err := os.ReadFile("./config.json")
 	if err != nil {
 		return fmt.Errorf("error reading config file: %v", err)
 	}
 
-	err = json.Unmarshal(bytes, &c)
+	err = json.Unmarshal(bytes, &config)
 	if err != nil {
 		return fmt.Errorf("error parsing config file: %v", err)
+	}
+
+	if config.Token == "" {
+		return fmt.Errorf("token field not set")
+	}
+
+	if config.GuildID == "" {
+		return fmt.Errorf("guild_id field not set")
+	}
+
+	if config.LOLChannel == "" {
+		return fmt.Errorf("lol_channel field not set")
+	}
+
+	if config.VALChannel == "" {
+		return fmt.Errorf("val_channel field not set")
+	}
+
+	if config.UpdateDateTimer < 1800000 {
+		return fmt.Errorf("update_data_timer is set too low")
+	}
+
+	if config.PostDataTimer < 1800000 {
+		return fmt.Errorf("post_data_timer is set too low")
 	}
 
 	return nil
@@ -98,54 +122,26 @@ func (c *Client) connect() error {
 func (c *Client) registerCommands() error {
 	c.logger.Info("Registering commands.")
 
-	registeredCommands := make([]*discordgo.ApplicationCommand, len(commands))
-
-	for i, cmd := range commands {
-		command, err := c.session.ApplicationCommandCreate(c.session.State.User.ID, c.config.GuildID, cmd)
-		if err != nil {
-			return fmt.Errorf("error registering '%v' command: %v", cmd.Name, err)
-		}
-
-		registeredCommands[i] = command
-		c.logger.Info(fmt.Sprintf("Registered '%v' command.", command.Name))
+	cmds, err := c.session.ApplicationCommandBulkOverwrite(c.session.State.User.ID, c.config.GuildID, commands)
+	if err != nil {
+		return fmt.Errorf("error registering guild commands: %v", err)
 	}
 
-	c.logger.Info("Commands registered.")
+	c.logger.Info(fmt.Sprintf("Registered %v guild commands.", len(cmds)))
+
 	return nil
 }
 
 func (c *Client) removeCommands() error {
 	c.logger.Info("Removing commands")
 
-	registeredCommands, err := c.session.ApplicationCommands(c.session.State.User.ID, c.config.GuildID)
+	_, err := c.session.ApplicationCommandBulkOverwrite(c.session.State.User.ID, c.config.GuildID, make([]*discordgo.ApplicationCommand, 0))
 	if err != nil {
-		return fmt.Errorf("error fetching registered commands: %v", err)
+		return fmt.Errorf("error removing guild commands: %v", err)
 	}
 
-	for _, cmd := range registeredCommands {
-		err := c.session.ApplicationCommandDelete(c.session.State.User.ID, c.config.GuildID, cmd.ID)
-		if err != nil {
-			return fmt.Errorf("error deleting '%v' command: %v", cmd.Name, err)
-		}
+	c.logger.Info("Removed guild commands.")
 
-		c.logger.Info(fmt.Sprintf("Deleted '%v' command.", cmd.Name))
-	}
-
-	registeredCommands, err = c.session.ApplicationCommands(c.session.State.User.ID, "")
-	if err != nil {
-		return fmt.Errorf("error fetching registered global commands: %v", err)
-	}
-
-	for _, cmd := range registeredCommands {
-		err := c.session.ApplicationCommandDelete(c.session.State.User.ID, "", cmd.ID)
-		if err != nil {
-			return fmt.Errorf("error deleting global '%v' command: %v", cmd.Name, err)
-		}
-
-		c.logger.Info(fmt.Sprintf("Deleted global '%v' command.", cmd.Name))
-	}
-
-	c.logger.Info("Commands removed.")
 	return nil
 }
 
