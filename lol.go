@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"strings"
 	"time"
@@ -62,9 +61,9 @@ func LOLEsportsCommand(session *discordgo.Session, interaction *discordgo.Intera
 }
 
 func updateLOLData() error {
-	log.Print("Updating LOL data.")
+	client.logger.Info("Updating LOL data.")
 	lolSchedule = make(map[string][]LOLEsportsLeagueSchedule)
-	client := http.DefaultClient
+	http := http.DefaultClient
 
 	req, err := newRequest("https://esports-api.lolesports.com/persisted/gw/getLeagues?hl=en-US")
 	if err != nil {
@@ -72,7 +71,7 @@ func updateLOLData() error {
 	}
 	req.Header.Add("x-api-key", "0TvQnueqKa5mxJntVWt0w4LpLfEkrV1Ta8rQBb9Z")
 
-	res, err := client.Do(req)
+	res, err := http.Do(req)
 	if err != nil {
 		return err
 	}
@@ -96,9 +95,10 @@ func updateLOLData() error {
 	if err != nil {
 		return err
 	}
+
 	req.Header.Add("x-api-key", "0TvQnueqKa5mxJntVWt0w4LpLfEkrV1Ta8rQBb9Z")
 
-	res, err = client.Do(req)
+	res, err = http.Do(req)
 	if err != nil {
 		return err
 	}
@@ -138,7 +138,7 @@ func updateLOLData() error {
 	for dateKey, entries := range schedule {
 		parsedTime, err := time.Parse("2006 01 02", dateKey)
 		if err != nil {
-			log.Printf("Error parsing date key: %v", err)
+			client.logger.Error(fmt.Sprintf("Error parsing date key: %v", err))
 			continue
 		}
 
@@ -150,7 +150,7 @@ func updateLOLData() error {
 			for _, item := range entryList {
 				parsedTime, err = time.Parse("2006-01-02T15:04:05Z", item.Time)
 				if err != nil {
-					log.Printf("Error parsing entry time: %v", err)
+					client.logger.Error(fmt.Sprintf("Error parsing entry time: %v", err))
 					continue
 				}
 
@@ -167,7 +167,7 @@ func updateLOLData() error {
 		}
 	}
 
-	log.Print("Updated LOL data.")
+	client.logger.Info("Updated LOL data.")
 	return nil
 }
 
@@ -188,7 +188,7 @@ func createLOLMessageEmbed() *discordgo.MessageEmbed {
 		for _, game := range games {
 			date, err := time.Parse("2006-01-02T15:04:05Z", game.Time)
 			if err != nil {
-				log.Printf("Error parsing game time: %v", err)
+				client.logger.Error(fmt.Sprintf("Error parsing game time: %v", err))
 				continue
 			}
 
@@ -205,7 +205,7 @@ func createLOLMessageEmbed() *discordgo.MessageEmbed {
 	}
 
 	if len(fields) == 0 {
-		log.Print("No LOL games found.")
+		client.logger.Info("No LOL games found.")
 		return &discordgo.MessageEmbed{Title: fmt.Sprintf("League games on %v", tomorrow.Format("2006/01/02")), Color: embedColor, Description: "No games found :/"}
 	}
 
@@ -217,13 +217,13 @@ func getLOLUrlByLeague(leagueName LOLEsportsLeagueSchedule) string {
 }
 
 func sendLOLEmbed() error {
-	log.Print("Sending LOL data.")
+	client.logger.Info("Sending LOL data.")
 
-	_, err := session.ChannelMessageSendEmbed(config.LOLChannel, createLOLMessageEmbed())
+	_, err := client.session.ChannelMessageSendEmbed(client.config.LOLChannel, createLOLMessageEmbed())
 	if err != nil {
 		return err
 	}
 
-	log.Print("Sent LOL data.")
+	client.logger.Info("Sent LOL data.")
 	return nil
 }

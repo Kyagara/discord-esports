@@ -34,14 +34,14 @@ func updateAllData() error {
 		return fmt.Errorf("error updating VAL data: %v", err)
 	}
 
-	ddVersion, err = dd.DDragon.Version.Latest()
+	ddVersion, err = client.equinox.DDragon.Version.Latest()
 	if err != nil {
 		return fmt.Errorf("error updating data dragon version: %v", err)
 	}
 
-	versionUpdated = time.Now()
+	ddVersionUpdated = time.Now()
 
-	champions, err = dd.DDragon.Champion.AllChampions(ddVersion, ddragon.EnUS)
+	champions, err = client.equinox.DDragon.Champion.AllChampions(ddVersion, ddragon.EnUS)
 	if err != nil {
 		return fmt.Errorf("error updating champions data: %v", err)
 	}

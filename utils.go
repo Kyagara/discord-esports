@@ -1,7 +1,7 @@
 package main
 
 import (
-	"log"
+	"fmt"
 	"net/http"
 
 	"github.com/bwmarrin/discordgo"
@@ -17,12 +17,12 @@ func newRequest(endpoint string) (*http.Request, error) {
 }
 
 func hasPermissions(session *discordgo.Session, interaction *discordgo.InteractionCreate) bool {
-	if len(config.ModRoles) == 0 {
+	if len(client.config.ModRoles) == 0 {
 		return true
 	}
 
 	for _, memberRole := range interaction.Member.Roles {
-		for _, modRole := range config.ModRoles {
+		for _, modRole := range client.config.ModRoles {
 			if memberRole == modRole {
 				return true
 			}
@@ -34,9 +34,9 @@ func hasPermissions(session *discordgo.Session, interaction *discordgo.Interacti
 }
 
 func respondWithError(interaction *discordgo.Interaction, err error) {
-	log.Printf("Error executing command: %v", err)
+	client.logger.Error(fmt.Sprintf("Error executing command: %v", err))
 
-	err = session.InteractionRespond(interaction, &discordgo.InteractionResponse{
+	err = client.session.InteractionRespond(interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
 			Content: "Error executing command.",
@@ -45,12 +45,12 @@ func respondWithError(interaction *discordgo.Interaction, err error) {
 	})
 
 	if err != nil {
-		log.Printf("Error responding with error: %v", err)
+		client.logger.Error(fmt.Sprintf("Error responding with error: %v", err))
 	}
 }
 
 func respondWithEmbed(interaction *discordgo.Interaction, embed []*discordgo.MessageEmbed) {
-	err := session.InteractionRespond(interaction, &discordgo.InteractionResponse{
+	err := client.session.InteractionRespond(interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
 			Embeds: embed,
@@ -58,12 +58,12 @@ func respondWithEmbed(interaction *discordgo.Interaction, embed []*discordgo.Mes
 	})
 
 	if err != nil {
-		log.Printf("Error responding with embed: %v", err)
+		client.logger.Error(fmt.Sprintf("Error responding with embed: %v", err))
 	}
 }
 
 func respondWithMessage(interaction *discordgo.Interaction, message string) {
-	err := session.InteractionRespond(interaction, &discordgo.InteractionResponse{
+	err := client.session.InteractionRespond(interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
 			Content: message,
@@ -72,6 +72,6 @@ func respondWithMessage(interaction *discordgo.Interaction, message string) {
 	})
 
 	if err != nil {
-		log.Printf("Error responding with message: %v", err)
+		client.logger.Error(fmt.Sprintf("Error responding with message: %v", err))
 	}
 }

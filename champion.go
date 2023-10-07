@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"strings"
 	"time"
 
@@ -13,18 +12,18 @@ import (
 func ChampionCommand(session *discordgo.Session, interaction *discordgo.InteractionCreate) {
 	options := interaction.ApplicationCommandData().Options
 
-	notUpToDate := time.Since(versionUpdated) > 4*time.Minute
+	notUpToDate := time.Since(ddVersionUpdated) > 4*time.Minute
 
 	if len(championsNames) == 0 || notUpToDate {
-		ddVersion, err := dd.DDragon.Version.Latest()
+		ddVersion, err := client.equinox.DDragon.Version.Latest()
 		if err != nil {
 			respondWithError(interaction.Interaction, err)
 			return
 		}
 
-		versionUpdated = time.Now()
+		ddVersionUpdated = time.Now()
 
-		champions, err = dd.DDragon.Champion.AllChampions(ddVersion, ddragon.EnUS)
+		champions, err = client.equinox.DDragon.Champion.AllChampions(ddVersion, ddragon.EnUS)
 		if err != nil {
 			respondWithError(interaction.Interaction, err)
 			return
@@ -39,7 +38,7 @@ func ChampionCommand(session *discordgo.Session, interaction *discordgo.Interact
 	if interaction.Type == discordgo.InteractionApplicationCommandAutocomplete {
 		var filteredNames []string
 		for _, c := range championsNames {
-			if strings.HasPrefix(c, options[0].StringValue()) {
+			if strings.HasPrefix(strings.ToLower(c), strings.ToLower(options[0].StringValue())) {
 				filteredNames = append(filteredNames, c)
 			}
 		}
@@ -62,7 +61,7 @@ func ChampionCommand(session *discordgo.Session, interaction *discordgo.Interact
 		})
 
 		if err != nil {
-			log.Printf("Error sending autocomplete: %v", err)
+			client.logger.Error(fmt.Sprintf("Error sending autocomplete: %v", err))
 		}
 
 		return
@@ -75,7 +74,7 @@ func ChampionCommand(session *discordgo.Session, interaction *discordgo.Interact
 		return
 	}
 
-	data, err := dd.CDragon.Champion.ByName(ddVersion, options[0].StringValue())
+	data, err := client.equinox.CDragon.Champion.ByName(ddVersion, options[0].StringValue())
 	if err != nil {
 		respondWithError(interaction.Interaction, err)
 		return

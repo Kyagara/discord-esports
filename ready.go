@@ -1,21 +1,21 @@
 package main
 
 import (
-	"log"
+	"fmt"
 
 	"github.com/bwmarrin/discordgo"
 )
 
 func readyEvent(session *discordgo.Session, ready *discordgo.Ready) {
-	log.Printf("Logged in as: %v#%v", session.State.User.Username, session.State.User.Discriminator)
+	client.logger.Info(fmt.Sprintf("Logged in as: %v#%v", session.State.User.Username, session.State.User.Discriminator))
 
 	err := updateAllData()
 	if err != nil {
-		log.Printf("Error updating data: %v", err)
+		client.logger.Error(fmt.Sprintf("Error updating data: %v", err))
 	}
 
 	err = postAllData()
 	if err != nil {
-		log.Printf("Error sending data: %v", err)
+		client.logger.Error(fmt.Sprintf("Error sending data: %v", err))
 	}
 }

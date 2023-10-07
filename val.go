@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -45,16 +44,16 @@ func VALEsportsCommand(session *discordgo.Session, interaction *discordgo.Intera
 }
 
 func updateVALData() error {
-	log.Print("Updating VAL data.")
+	client.logger.Error("Updating VAL data.")
 	valSchedule = make(map[string][]VALEsportsTournamentSchedule)
-	client := http.DefaultClient
+	http := http.DefaultClient
 
 	req, err := newRequest("https://vlrggapi.vercel.app/match/upcoming_index")
 	if err != nil {
 		return err
 	}
 
-	res, err := client.Do(req)
+	res, err := http.Do(req)
 	if err != nil {
 		return err
 	}
@@ -81,7 +80,7 @@ func updateVALData() error {
 
 		i, err := strconv.ParseInt(fmt.Sprintf("%v", gameData.Time), 10, 64)
 		if err != nil {
-			log.Printf("Error parsing unix date: %v", err)
+			client.logger.Error(fmt.Sprintf("Error parsing unix date: %v", err))
 			continue
 		}
 
@@ -104,7 +103,7 @@ func updateVALData() error {
 	for dateKey, entries := range schedule {
 		parsedTime, err := time.Parse("2006 1 2", dateKey)
 		if err != nil {
-			log.Printf("Error parsing date key: %v", err)
+			client.logger.Error(fmt.Sprintf("Error parsing date key: %v", err))
 			continue
 		}
 
@@ -116,7 +115,7 @@ func updateVALData() error {
 			for _, item := range entryList {
 				i, err := strconv.ParseInt(fmt.Sprintf("%v", item.Time), 10, 64)
 				if err != nil {
-					log.Printf("Error parsing entry time: %v", err)
+					client.logger.Error(fmt.Sprintf("Error parsing entry time: %v", err))
 					continue
 				}
 
@@ -135,7 +134,7 @@ func updateVALData() error {
 		}
 	}
 
-	log.Print("Updated VAL data.")
+	client.logger.Info("Updated VAL data.")
 	return nil
 }
 
@@ -156,7 +155,7 @@ func createVALMessageEmbed() *discordgo.MessageEmbed {
 		for _, game := range games {
 			i, err := strconv.ParseInt(fmt.Sprintf("%v", game.Time), 10, 64)
 			if err != nil {
-				log.Printf("Error parsing game time: %v", err)
+				client.logger.Error(fmt.Sprintf("Error parsing game time: %v", err))
 				continue
 			}
 
@@ -174,7 +173,7 @@ func createVALMessageEmbed() *discordgo.MessageEmbed {
 	}
 
 	if len(fields) == 0 {
-		log.Print("No VAL games found.")
+		client.logger.Info("No VAL games found.")
 		return &discordgo.MessageEmbed{Title: fmt.Sprintf("Valorant games on %v", tomorrow.Format("2006/01/02")), Color: embedColor, Description: "No games found :/"}
 	}
 
@@ -184,13 +183,13 @@ func createVALMessageEmbed() *discordgo.MessageEmbed {
 }
 
 func sendVALEmbed() error {
-	log.Print("Sending VAL data.")
+	client.logger.Info("Sending VAL data.")
 
-	_, err := session.ChannelMessageSendEmbed(config.VALChannel, createVALMessageEmbed())
+	_, err := client.session.ChannelMessageSendEmbed(client.config.VALChannel, createVALMessageEmbed())
 	if err != nil {
 		return err
 	}
 
-	log.Print("Sent VAL data.")
+	client.logger.Info("Sent VAL data.")
 	return nil
 }
