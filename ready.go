@@ -9,6 +9,10 @@ import (
 func readyEvent(session *discordgo.Session, ready *discordgo.Ready) {
 	client.logger.Info(fmt.Sprintf("Logged in as: %v#%v", session.State.User.Username, session.State.User.Discriminator))
 
+	if *removeFlag || *registerFlag {
+		return
+	}
+
 	err := updateAllData()
 	if err != nil {
 		client.logger.Error(fmt.Sprintf("Error updating data: %v", err))

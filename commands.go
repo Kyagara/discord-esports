@@ -5,6 +5,10 @@ import (
 )
 
 func interactionsEvent(session *discordgo.Session, interaction *discordgo.InteractionCreate) {
+	if *removeFlag || *registerFlag {
+		return
+	}
+
 	if handler, ok := commandHandlers[interaction.ApplicationCommandData().Name]; ok {
 		handler(session, interaction)
 	}
