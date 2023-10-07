@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/Kyagara/equinox/clients/ddragon"
@@ -40,17 +39,17 @@ func init() { flag.Parse() }
 
 func main() {
 	if *registerFlag && *removeFlag {
-		log.Fatal("Use only one of these commands at a time.")
+		client.logger.Fatal("Use only one of these commands at a time.")
 	}
 
 	client, err := newClient()
 	if err != nil {
-		log.Fatal(fmt.Errorf("error creating client: %v", err))
+		client.logger.Fatal(fmt.Sprintf("error creating client: %v", err))
 	}
 
 	err = client.connect()
 	if err != nil {
-		log.Fatal(err)
+		client.logger.Fatal(fmt.Sprintf("error connecting to Discord session: %v", err))
 	}
 
 	defer client.session.Close()
@@ -58,7 +57,7 @@ func main() {
 	if *registerFlag {
 		err := client.registerCommands()
 		if err != nil {
-			log.Fatal(err)
+			client.logger.Fatal(fmt.Sprintf("error registering commands: %v", err))
 		}
 		return
 	}
@@ -66,7 +65,7 @@ func main() {
 	if *removeFlag {
 		err := client.removeCommands()
 		if err != nil {
-			log.Fatal(err)
+			client.logger.Fatal(fmt.Sprintf("error removing commands: %v", err))
 		}
 		return
 	}

@@ -2,7 +2,7 @@
 
 This bot periodically sends information about upcoming League of Legends and Valorant professional games, its ~~a carbon copy~~ inspired by the [BottyMcBotface](https://github.com/Querijn/BottyMcBotface) bot.
 
-This bot uses the Lolesports api and [vlrggapi](https://github.com/axsddlr/vlrggapi).
+This bot uses the Lolesports api, [vlrggapi](https://github.com/axsddlr/vlrggapi), [cdragon](https://github.com/CommunityDragon/) and ddragon.
 
 ## Slash Commands
 
@@ -30,9 +30,13 @@ https://discord.com/api/oauth2/authorize?client_id=BOT_ID&permissions=18432&scop
 
 Edit the `config.json.example` and rename it to just `config.json`.
 
+If a guild_id is not provided, the bot will register commands as global commands.
+
+If mod_roles is empty, anyone will be able to use the `post` and `update` commands.
+
 ### Running
 
-After building the bot with `go build .`, run the bot with the flag `-register`, this will register all commands to the guild specified in the config file, if you want to remove all commands use the `-remove` flag.
+After building the bot with `go build .`, run the bot with the flag `-register`, this will register all commands to the guild specified in the config file, if you want to remove all commands (including global ones) use the `-remove` flag.
 
 ## Disclaimer
 

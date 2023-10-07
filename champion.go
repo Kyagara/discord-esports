@@ -12,7 +12,7 @@ import (
 func ChampionCommand(session *discordgo.Session, interaction *discordgo.InteractionCreate) {
 	options := interaction.ApplicationCommandData().Options
 
-	notUpToDate := time.Since(ddVersionUpdated) > 4*time.Minute
+	notUpToDate := time.Since(ddVersionUpdated) > time.Duration(4*time.Minute)
 
 	if len(championsNames) == 0 || notUpToDate {
 		ddVersion, err := client.equinox.DDragon.Version.Latest()
