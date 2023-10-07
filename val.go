@@ -44,7 +44,7 @@ func VALEsportsCommand(session *discordgo.Session, interaction *discordgo.Intera
 }
 
 func updateVALData() error {
-	client.logger.Error("Updating VAL data.")
+	client.logger.Info("Updating VAL data.")
 	valSchedule = make(map[string][]VALEsportsTournamentSchedule)
 	http := http.DefaultClient
 

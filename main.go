@@ -48,7 +48,11 @@ func main() {
 		log.Fatal(fmt.Errorf("error creating client: %v", err))
 	}
 
-	client.connect()
+	err = client.connect()
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	defer client.session.Close()
 
 	if *registerFlag {
