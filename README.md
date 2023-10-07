@@ -34,7 +34,7 @@ If mod_roles is empty, anyone will be able to use the `post` and `update` comman
 
 ### Running
 
-After building the bot with `go build .`, run the bot with the flag `-register`, this will register all commands to the guild specified in the config file, if you want to remove all commands (including global ones) use the `-remove` flag.
+After building the bot with `go build .`, run the bot with the flag `-register`, this will register all commands to the guild specified in the config file, if you want to remove all commands use the `-remove` flag.
 
 ## Disclaimer
 
