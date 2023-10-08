@@ -48,7 +48,6 @@ func ChampionCommand(session *discordgo.Session, interaction *discordgo.Interact
 		}
 
 		var choices []*discordgo.ApplicationCommandOptionChoice
-
 		for _, n := range filteredNames {
 			choices = append(choices, &discordgo.ApplicationCommandOptionChoice{Name: n, Value: n})
 		}
@@ -68,70 +67,15 @@ func ChampionCommand(session *discordgo.Session, interaction *discordgo.Interact
 	}
 
 	champion, ok := champions[options[0].StringValue()]
-
 	if !ok {
 		respondWithError(interaction.Interaction, fmt.Errorf("champion '%s' not found", options[0].StringValue()))
 		return
 	}
 
-	data, err := client.equinox.CDragon.Champion.ByName(ddVersion, options[0].StringValue())
+	data, err := client.equinox.DDragon.Champion.ByName(ddVersion, ddragon.EnUS, options[0].StringValue())
 	if err != nil {
 		respondWithError(interaction.Interaction, err)
 		return
-	}
-
-	cds := []string{"%v/%v/%v/%v/%v", "%v/%v/%v/%v/%v", "%v/%v/%v/%v/%v", "%v/%v/%v"}
-
-	for i := 0; i < 3; i++ {
-		cd := data.Spells[i].CooldownCoefficients
-		if cd[0] == cd[4] {
-			cds[i] = fmt.Sprint(cd[0])
-			continue
-		}
-		cds[i] = fmt.Sprintf(cds[i], cd[0], cd[1], cd[2], cd[3], cd[4])
-	}
-
-	cd := data.Spells[3].CooldownCoefficients
-	if cd[0] == cd[2] {
-		cds[3] = fmt.Sprint(cd[0])
-	} else {
-		cds[3] = fmt.Sprintf(cds[3], cd[0], cd[1], cd[2])
-	}
-
-	spellRanges := []string{"%v/%v/%v/%v/%v", "%v/%v/%v/%v/%v", "%v/%v/%v/%v/%v", "%v/%v/%v"}
-
-	for i := 0; i < 3; i++ {
-		spellRange := data.Spells[i].Range
-		if spellRange[0] == spellRange[4] {
-			spellRanges[i] = fmt.Sprint(spellRange[0])
-			continue
-		}
-		spellRanges[i] = fmt.Sprintf(spellRanges[i], spellRange[0], spellRange[1], spellRange[2], spellRange[3], spellRange[4])
-	}
-
-	spellRange := data.Spells[3].Range
-	if spellRange[0] == spellRange[2] {
-		spellRanges[3] = fmt.Sprint(spellRange[0])
-	} else {
-		spellRanges[3] = fmt.Sprintf(spellRanges[3], spellRange[0], spellRange[1], spellRange[2])
-	}
-
-	spellCosts := []string{"%v/%v/%v/%v/%v", "%v/%v/%v/%v/%v", "%v/%v/%v/%v/%v", "%v/%v/%v"}
-
-	for i := 0; i < 3; i++ {
-		spellCost := data.Spells[i].CostCoefficients
-		if spellCost[0] == spellCost[4] {
-			spellCosts[i] = fmt.Sprint(spellCost[0])
-			continue
-		}
-		spellCosts[i] = fmt.Sprintf(spellCosts[i], spellCost[0], spellCost[1], spellCost[2], spellCost[3], spellCost[4])
-	}
-
-	spellCost := data.Spells[3].CostCoefficients
-	if spellCost[0] == spellCost[2] {
-		spellCosts[3] = fmt.Sprint(spellCost[0])
-	} else {
-		spellCosts[3] = fmt.Sprintf(spellCosts[3], spellCost[0], spellCost[1], spellCost[2])
 	}
 
 	resource := champion.Partype
@@ -160,10 +104,14 @@ func ChampionCommand(session *discordgo.Session, interaction *discordgo.Interact
 		fields = append(fields, &discordgo.MessageEmbedField{Name: "Crit", Value: fmt.Sprintf("``%v | %v per lvl``", champion.Stats.Crit, champion.Stats.CritPerLevel), Inline: true})
 	}
 
+	cds := fmt.Sprintf("``Q - %v\nW - %v\nE - %v\nR - %v``", data.Spells[0].CooldownBurn, data.Spells[1].CooldownBurn, data.Spells[2].CooldownBurn, data.Spells[3].CooldownBurn)
+	costs := fmt.Sprintf("``Q - %v\nW - %v\nE - %v\nR - %v``", data.Spells[0].CostBurn, data.Spells[1].CostBurn, data.Spells[2].CostBurn, data.Spells[3].CostBurn)
+	ranges := fmt.Sprintf("``Q - %v\nW - %v\nE - %v\nR - %v``", data.Spells[0].RangeBurn, data.Spells[1].RangeBurn, data.Spells[2].RangeBurn, data.Spells[3].RangeBurn)
+
 	fields = append(fields, &discordgo.MessageEmbedField{Name: "", Value: ""})
-	fields = append(fields, &discordgo.MessageEmbedField{Name: "Cooldown", Value: fmt.Sprintf("``Q - %v\nW - %v\nE - %v\nR - %v``", cds[0], cds[1], cds[2], cds[3]), Inline: true})
-	fields = append(fields, &discordgo.MessageEmbedField{Name: "Spell Cost", Value: fmt.Sprintf("``Q - %v\nW - %v\nE - %v\nR - %v``", spellCosts[0], spellCosts[1], spellCosts[2], spellCosts[3]), Inline: true})
-	fields = append(fields, &discordgo.MessageEmbedField{Name: "Spell Range", Value: fmt.Sprintf("``Q - %v\nW - %v\nE - %v\nR - %v``", spellRanges[0], spellRanges[1], spellRanges[2], spellRanges[3]), Inline: true})
+	fields = append(fields, &discordgo.MessageEmbedField{Name: "Cooldown", Value: cds, Inline: true})
+	fields = append(fields, &discordgo.MessageEmbedField{Name: "Spell Cost", Value: costs, Inline: true})
+	fields = append(fields, &discordgo.MessageEmbedField{Name: "Spell Range", Value: ranges, Inline: true})
 
 	fields = append(fields, &discordgo.MessageEmbedField{Name: "", Value: ""})
 	fields = append(fields, &discordgo.MessageEmbedField{Name: "Range", Value: fmt.Sprintf("``%v``", champion.Stats.AttackRange), Inline: true})
