@@ -5,5 +5,13 @@
   "val_channel": "1111111111111111111",
   "mod_roles": ["1111111111111111111"],
   "update_data_timer": 18000000,
-  "post_data_timer": 43200000
+  "post_data_timer": 43200000,
+  "commands": {
+    "lol": true,
+    "val": true,
+    "post": true,
+    "update": true,
+    "info": true,
+    "champion": true
+  }
 }

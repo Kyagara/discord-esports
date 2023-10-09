@@ -13,10 +13,16 @@ import (
 )
 
 type Client struct {
-	session *discordgo.Session
-	equinox *equinox.Equinox
-	config  *Configuration
-	logger  *zap.Logger
+	session  *discordgo.Session
+	equinox  *equinox.Equinox
+	config   *Configuration
+	logger   *zap.Logger
+	commands map[string]Command
+}
+
+type Command struct {
+	Interaction *discordgo.ApplicationCommand
+	Handler     func(session *discordgo.Session, interaction *discordgo.InteractionCreate)
 }
 
 type Configuration struct {
@@ -27,6 +33,14 @@ type Configuration struct {
 	ModRoles        []string `json:"mod_roles"`
 	UpdateDateTimer int      `json:"update_data_timer"`
 	PostDataTimer   int      `json:"post_data_timer"`
+	Commands        struct {
+		LOL      bool `json:"lol"`
+		VAL      bool `json:"val"`
+		Post     bool `json:"post"`
+		Update   bool `json:"update"`
+		Info     bool `json:"info"`
+		Champion bool `json:"champion"`
+	} `json:"commands"`
 }
 
 func (config *Configuration) loadConfig() error {
@@ -94,14 +108,79 @@ func newClient() (*Client, error) {
 	}
 
 	client := &Client{
-		session: session,
-		equinox: equinox,
-		config:  &config,
-		logger:  logger,
+		session:  session,
+		equinox:  equinox,
+		config:   &config,
+		logger:   logger,
+		commands: map[string]Command{},
 	}
+
+	client.loadEnabledCommands()
 
 	logger.Info("Client successfully created.")
 	return client, nil
+}
+
+func (c *Client) loadEnabledCommands() {
+	client.commands = make(map[string]Command)
+
+	if c.config.Commands.LOL {
+		c.commands["lol"] = Command{Interaction: &discordgo.ApplicationCommand{
+			Name:                     "lol",
+			Description:              "Send a list of upcoming League of Legends games.",
+			DescriptionLocalizations: &map[discordgo.Locale]string{discordgo.PortugueseBR: "Envia uma lista de próximos jogos de League of Legends."},
+		}, Handler: LOLEsportsCommand}
+	}
+
+	if c.config.Commands.VAL {
+		c.commands["val"] = Command{Interaction: &discordgo.ApplicationCommand{
+			Name:                     "val",
+			Description:              "Send a list of upcoming Valorant games.",
+			DescriptionLocalizations: &map[discordgo.Locale]string{discordgo.PortugueseBR: "Envia uma lista de próximos jogos de Valorant."},
+		}, Handler: VALEsportsCommand}
+	}
+
+	if c.config.Commands.Update {
+		c.commands["update"] = Command{Interaction: &discordgo.ApplicationCommand{
+			Name:                     "update",
+			Description:              "Force all data to update.",
+			DescriptionLocalizations: &map[discordgo.Locale]string{discordgo.PortugueseBR: "Força todos os dados a serem atualizados."},
+		}, Handler: UpdateCommand}
+	}
+
+	if c.config.Commands.Info {
+		c.commands["info"] = Command{Interaction: &discordgo.ApplicationCommand{
+			Name:                     "info",
+			Description:              "Send information about the bot.",
+			DescriptionLocalizations: &map[discordgo.Locale]string{discordgo.PortugueseBR: "Envia informação sobre o bot."},
+		}, Handler: InfoCommand}
+	}
+
+	if c.config.Commands.Post {
+		c.commands["post"] = Command{Interaction: &discordgo.ApplicationCommand{
+			Name:                     "post",
+			Description:              "Force all data to be sent again.",
+			DescriptionLocalizations: &map[discordgo.Locale]string{discordgo.PortugueseBR: "Força todos os dados a serem enviados."},
+		}, Handler: PostCommand}
+	}
+
+	if c.config.Commands.Champion {
+		c.commands["champion"] = Command{Interaction: &discordgo.ApplicationCommand{
+			Name:                     "champion",
+			Description:              "Get a League of Legends champion stats.",
+			DescriptionLocalizations: &map[discordgo.Locale]string{discordgo.PortugueseBR: "Envia informações de um champion de League of Legends."},
+			Options: []*discordgo.ApplicationCommandOption{
+				{
+					Name:                     "champion",
+					Required:                 true,
+					Autocomplete:             true,
+					Type:                     discordgo.ApplicationCommandOptionString,
+					Description:              "Champion name.",
+					DescriptionLocalizations: map[discordgo.Locale]string{discordgo.PortugueseBR: "Nome do champion."},
+				},
+			},
+		}, Handler: ChampionCommand}
+	}
 }
 
 func (c *Client) connect() error {
@@ -122,7 +201,12 @@ func (c *Client) connect() error {
 func (c *Client) registerCommands() error {
 	c.logger.Info("Registering commands.")
 
-	cmds, err := c.session.ApplicationCommandBulkOverwrite(c.session.State.User.ID, c.config.GuildID, commands)
+	var cmds []*discordgo.ApplicationCommand
+	for _, c := range c.commands {
+		cmds = append(cmds, c.Interaction)
+	}
+
+	cmds, err := c.session.ApplicationCommandBulkOverwrite(c.session.State.User.ID, c.config.GuildID, cmds)
 	if err != nil {
 		return fmt.Errorf("error registering guild commands: %v", err)
 	}

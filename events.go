@@ -23,3 +23,13 @@ func readyEvent(session *discordgo.Session, ready *discordgo.Ready) {
 		client.logger.Error(fmt.Sprintf("Error sending data: %v", err))
 	}
 }
+
+func interactionsEvent(session *discordgo.Session, interaction *discordgo.InteractionCreate) {
+	if *removeFlag || *registerFlag {
+		return
+	}
+
+	if command, ok := client.commands[interaction.ApplicationCommandData().Name]; ok {
+		command.Handler(session, interaction)
+	}
+}

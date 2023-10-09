@@ -8,9 +8,9 @@ import (
 )
 
 func InfoCommand(session *discordgo.Session, interaction *discordgo.InteractionCreate) {
-	cmds := make([]string, len(commands))
-	for i, cmd := range commands {
-		cmds[i] = cmd.Name
+	var cmds []string
+	for _, c := range client.commands {
+		cmds = append(cmds, c.Interaction.Name)
 	}
 
 	embed := &discordgo.MessageEmbed{Title: "Info", Color: embedColor, Fields: []*discordgo.MessageEmbedField{
