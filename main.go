@@ -24,7 +24,7 @@ var (
 	ddVersionUpdated time.Time
 
 	champions      map[string]ddragon.ChampionData
-	championsNames []string
+	championsNames map[string]string
 
 	lastUpdate time.Time
 	lastPost   time.Time

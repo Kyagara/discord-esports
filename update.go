@@ -46,9 +46,9 @@ func updateAllData() error {
 		return fmt.Errorf("error updating champions data: %v", err)
 	}
 
-	championsNames = []string{}
+	championsNames = make(map[string]string)
 	for _, c := range champions {
-		championsNames = append(championsNames, c.ID)
+		championsNames[c.Name] = c.ID
 	}
 
 	lastUpdate = time.Now()

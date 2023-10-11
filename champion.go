@@ -29,27 +29,27 @@ func ChampionCommand(session *discordgo.Session, interaction *discordgo.Interact
 			return
 		}
 
-		championsNames = []string{}
+		championsNames = make(map[string]string)
 		for _, c := range champions {
-			championsNames = append(championsNames, c.ID)
+			championsNames[c.Name] = c.ID
 		}
 	}
 
 	if interaction.Type == discordgo.InteractionApplicationCommandAutocomplete {
-		var filteredNames []string
-		for _, c := range championsNames {
-			if strings.HasPrefix(strings.ToLower(c), strings.ToLower(options[0].StringValue())) {
-				filteredNames = append(filteredNames, c)
+		filteredNames := make(map[string]string)
+		for id, name := range championsNames {
+			if strings.HasPrefix(strings.ToLower(name), strings.ToLower(options[0].StringValue())) {
+				filteredNames[name] = id
+			}
+
+			if len(filteredNames) == 20 {
+				break
 			}
 		}
 
-		if len(filteredNames) > 20 {
-			filteredNames = filteredNames[:20]
-		}
-
 		var choices []*discordgo.ApplicationCommandOptionChoice
-		for _, n := range filteredNames {
-			choices = append(choices, &discordgo.ApplicationCommandOptionChoice{Name: n, Value: n})
+		for id, name := range filteredNames {
+			choices = append(choices, &discordgo.ApplicationCommandOptionChoice{Name: name, Value: id})
 		}
 
 		err := session.InteractionRespond(interaction.Interaction, &discordgo.InteractionResponse{
@@ -84,24 +84,24 @@ func ChampionCommand(session *discordgo.Session, interaction *discordgo.Interact
 	}
 
 	fields := []*discordgo.MessageEmbedField{
-		{Name: "HP | Regen", Value: fmt.Sprintf("``%v | %v per lvl``\n``%v | %v per lvl``", champion.Stats.HP, champion.Stats.HPPerLevel, champion.Stats.HPRegen, champion.Stats.HPRegenPerLevel), Inline: true},
+		{Name: "HP | Regen", Value: fmt.Sprintf("``%v (+ %v)``\n``%v (+ %v)``", champion.Stats.HP, champion.Stats.HPPerLevel, champion.Stats.HPRegen, champion.Stats.HPRegenPerLevel), Inline: true},
 	}
 
 	if champion.Stats.MP != 0 && champion.Stats.MPPerLevel != 0 {
-		fields = append(fields, &discordgo.MessageEmbedField{Name: "MP | Regen", Value: fmt.Sprintf("``%v | %v per lvl\n%v | %v per lvl``", champion.Stats.MP, champion.Stats.MPPerLevel, champion.Stats.MPRegen, champion.Stats.MPRegenPerLevel), Inline: true})
+		fields = append(fields, &discordgo.MessageEmbedField{Name: "MP | Regen", Value: fmt.Sprintf("``%v (+ %v)``\n``%v (+ %v)``", champion.Stats.MP, champion.Stats.MPPerLevel, champion.Stats.MPRegen, champion.Stats.MPRegenPerLevel), Inline: true})
 	}
 
-	fields = append(fields, &discordgo.MessageEmbedField{Name: "Armor | MR", Value: fmt.Sprintf("``%v | %v per lvl\n%v | %v per lvl``", champion.Stats.Armor, champion.Stats.ArmorPerLevel, champion.Stats.SpellBlock, champion.Stats.SpellBlockPerLevel), Inline: true})
+	fields = append(fields, &discordgo.MessageEmbedField{Name: "Armor | MR", Value: fmt.Sprintf("``%v (+ %v)``\n``%v (+ %v)``", champion.Stats.Armor, champion.Stats.ArmorPerLevel, champion.Stats.SpellBlock, champion.Stats.SpellBlockPerLevel), Inline: true})
 
 	fields = append(fields, &discordgo.MessageEmbedField{Name: "", Value: ""})
-	fields = append(fields, &discordgo.MessageEmbedField{Name: "Attack Damage", Value: fmt.Sprintf("``%v | %v per lvl``", champion.Stats.AttackDamage, champion.Stats.AttackDamagePerLevel), Inline: true})
+	fields = append(fields, &discordgo.MessageEmbedField{Name: "Attack Damage", Value: fmt.Sprintf("``%v (+ %v)``", champion.Stats.AttackDamage, champion.Stats.AttackDamagePerLevel), Inline: true})
 
 	if champion.Stats.AttackSpeed != 0 && champion.Stats.AttackSpeedPerLevel != 0 {
-		fields = append(fields, &discordgo.MessageEmbedField{Name: "Attack Speed", Value: fmt.Sprintf("``%v | %v per lvl``", champion.Stats.AttackSpeed, champion.Stats.AttackSpeedPerLevel), Inline: true})
+		fields = append(fields, &discordgo.MessageEmbedField{Name: "Attack Speed", Value: fmt.Sprintf("``%v (+ %v)``", champion.Stats.AttackSpeed, champion.Stats.AttackSpeedPerLevel), Inline: true})
 	}
 
 	if champion.Stats.Crit != 0 && champion.Stats.CritPerLevel != 0 {
-		fields = append(fields, &discordgo.MessageEmbedField{Name: "Crit", Value: fmt.Sprintf("``%v | %v per lvl``", champion.Stats.Crit, champion.Stats.CritPerLevel), Inline: true})
+		fields = append(fields, &discordgo.MessageEmbedField{Name: "Crit", Value: fmt.Sprintf("``%v (+ %v)``", champion.Stats.Crit, champion.Stats.CritPerLevel), Inline: true})
 	}
 
 	cds := fmt.Sprintf("``Q - %v\nW - %v\nE - %v\nR - %v``", data.Spells[0].CooldownBurn, data.Spells[1].CooldownBurn, data.Spells[2].CooldownBurn, data.Spells[3].CooldownBurn)
@@ -130,7 +130,7 @@ func ChampionCommand(session *discordgo.Session, interaction *discordgo.Interact
 		Thumbnail: &discordgo.MessageEmbedThumbnail{
 			URL: fmt.Sprintf("https://ddragon.leagueoflegends.com/cdn/%s/img/champion/%s.png", ddVersion, champion.ID),
 		},
-		Description: fmt.Sprintf("[Wiki](https://leagueoflegends.fandom.com/wiki/%s/LoL) - [LoLalytics](https://lolalytics.com/lol/%s/build/)", champion.ID, strings.ToLower(champion.ID)),
+		Description: fmt.Sprintf("[Wiki](https://leagueoflegends.fandom.com/wiki/%s/LoL) - [LoLalytics](https://lolalytics.com/lol/%s/build/)", strings.Replace(champion.Name, " ", "_", 1), strings.ToLower(champion.ID)),
 		Fields:      fields,
 		Footer:      &discordgo.MessageEmbedFooter{Text: strings.Join(tags, ", ")},
 	}
