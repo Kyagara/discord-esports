@@ -167,7 +167,7 @@ func (c *Client) loadEnabledCommands() {
 	if c.config.Commands.Champion {
 		c.commands["champion"] = Command{Interaction: &discordgo.ApplicationCommand{
 			Name:                     "champion",
-			Description:              "Get a League of Legends champion stats.",
+			Description:              "Get information about a League of Legends champion.",
 			DescriptionLocalizations: &map[discordgo.Locale]string{discordgo.PortugueseBR: "Envia informações de um champion de League of Legends."},
 			Options: []*discordgo.ApplicationCommandOption{
 				{
@@ -177,6 +177,20 @@ func (c *Client) loadEnabledCommands() {
 					Type:                     discordgo.ApplicationCommandOptionString,
 					Description:              "Champion name.",
 					DescriptionLocalizations: map[discordgo.Locale]string{discordgo.PortugueseBR: "Nome do champion."},
+				},
+				{
+					Name:                     "spell",
+					NameLocalizations:        map[discordgo.Locale]string{discordgo.PortugueseBR: "habilidade"},
+					Description:              "The champion's spell.",
+					DescriptionLocalizations: map[discordgo.Locale]string{discordgo.PortugueseBR: "A habilidade do champion."},
+					Type:                     discordgo.ApplicationCommandOptionInteger,
+					Choices: []*discordgo.ApplicationCommandOptionChoice{
+						{Name: "Passive", NameLocalizations: map[discordgo.Locale]string{discordgo.PortugueseBR: "Passiva"}, Value: -1},
+						{Name: "Q", Value: 0},
+						{Name: "W", Value: 1},
+						{Name: "E", Value: 2},
+						{Name: "R", Value: 3},
+					},
 				},
 			},
 		}, Handler: ChampionCommand}
