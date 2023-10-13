@@ -162,17 +162,6 @@ func (c *Client) loadEnabledCommands() {
 					Description:              "Champion name.",
 					DescriptionLocalizations: map[discordgo.Locale]string{discordgo.PortugueseBR: "Nome do champion."},
 				},
-				{
-					Name:                     "type",
-					NameLocalizations:        map[discordgo.Locale]string{discordgo.PortugueseBR: "tipo"},
-					Description:              "Choose the type of information you want from the champion.",
-					DescriptionLocalizations: map[discordgo.Locale]string{discordgo.PortugueseBR: "Escolha o tipo de informação que você quer desse champion."},
-					Type:                     discordgo.ApplicationCommandOptionString,
-					Choices: []*discordgo.ApplicationCommandOptionChoice{
-						{Name: "Spells", Value: "spells", NameLocalizations: map[discordgo.Locale]string{discordgo.PortugueseBR: "Geral"}},
-						{Name: "Skins", Value: "Skins", NameLocalizations: map[discordgo.Locale]string{discordgo.PortugueseBR: "Modificadores"}},
-					},
-				},
 			},
 		}, Handler: ChampionCommand}
 	}

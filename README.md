@@ -2,13 +2,13 @@
 
 This bot periodically sends information about upcoming League of Legends and Valorant professional games, its ~~a carbon copy~~ inspired by the [BottyMcBotface](https://github.com/Querijn/BottyMcBotface) bot.
 
-This bot uses the Lolesports api, [vlrggapi](https://github.com/axsddlr/vlrggapi), [cdragon](https://github.com/CommunityDragon/) and ddragon.
+This bot uses the Lolesports api, [League of Legends Wiki](https://leagueoflegends.fandom.com/wiki/League_of_Legends_Wiki), [vlrggapi](https://github.com/axsddlr/vlrggapi), [cdragon](https://github.com/CommunityDragon/) and ddragon.
 
 ## Slash Commands
 
 - esports - Get a list of upcoming matches from a game. User needs one of the mod roles set in `config.json` to use the update option.
 - info - Send information about the bot, includes link for this page, the last time data was updated and posted and all commands.
-- champion - Sends stats for a champion, includes links for a wiki page, LoLalytics page, skins and spells.
+- champion - Sends stats for a champion, includes links for a wiki page and LoLalytics page.
 - spell - Sends information about a spell, includes links for its wiki page, video, modifiers and notes.
 
 ## Todo

@@ -40,7 +40,7 @@ func SpellCommand(session *discordgo.Session, interaction *discordgo.Interaction
 		client.logger.Error(fmt.Sprintf("error converting spell index to int: %v", err))
 	}
 
-	embed := &discordgo.MessageEmbed{}
+	var embed *discordgo.MessageEmbed
 	components := []discordgo.MessageComponent{discordgo.ActionsRow{Components: []discordgo.MessageComponent{
 		discordgo.Button{Label: "Modifiers", CustomID: fmt.Sprintf("modifiers_%v_%v_%v", championKey, spell[0], spellIndex)},
 		discordgo.Button{Label: "Notes", CustomID: fmt.Sprintf("notes_%v_%v_%v", championKey, spell[0], spellIndex)},
@@ -76,9 +76,6 @@ func SpellCommand(session *discordgo.Session, interaction *discordgo.Interaction
 }
 
 func createChampionSpellEmbed(champion *WikiChampion, spell *WikiSpell, key string) SpellEmbeds {
-	championID := champion.ID
-	video := fmt.Sprintf("https://d28xe8vt774jo5.cloudfront.net/champion-abilities/%04d/ability_%04d_%v1.webm", championID, championID, key)
-
 	var damageType string
 	switch spell.DamageType {
 	case "PHYSICAL_DAMAGE":
@@ -131,16 +128,20 @@ func createChampionSpellEmbed(champion *WikiChampion, spell *WikiSpell, key stri
 	castTime := getDefaultIntString(spell.CastTime)
 	width := getDefaultIntString(spell.Width)
 
+	championID := champion.ID
+	video := fmt.Sprintf("https://d28xe8vt774jo5.cloudfront.net/champion-abilities/%04d/ability_%04d_%v1.webm", championID, championID, key)
+
 	description := fmt.Sprintf("[Wiki](https://leagueoflegends.fandom.com/wiki/%v/LoL#%v) - [Video](%v)\n\n", strings.Replace(champion.Name, " ", "_", -1), strings.Replace(spell.Name, " ", "_", -1), video)
 	for _, effects := range spell.Effects {
 		description += fmt.Sprintf("%v\n\n", effects.Description)
 	}
 
 	championAndSkillName := fmt.Sprintf("%v - %v", champion.Name, spell.Name)
+	wikiLink := fmt.Sprintf("https://leagueoflegends.fandom.com/wiki/%v/LoL#%v", strings.Replace(champion.Name, " ", "_", -1), strings.Replace(spell.Name, " ", "_", -1))
 
 	spellEmbed := discordgo.MessageEmbed{
 		Title:       championAndSkillName,
-		URL:         video,
+		URL:         wikiLink,
 		Color:       embedColor,
 		Description: description,
 		Thumbnail:   &discordgo.MessageEmbedThumbnail{URL: spell.Icon},
@@ -184,20 +185,29 @@ func createChampionSpellEmbed(champion *WikiChampion, spell *WikiSpell, key stri
 		}
 	}
 
-	wikiLink := fmt.Sprintf("https://leagueoflegends.fandom.com/wiki/%v/LoL#%v", strings.Replace(champion.Name, " ", "_", -1), strings.Replace(spell.Name, " ", "_", -1))
+	desc := ""
+	if len(fields) == 0 {
+		desc = "No modifiers available."
+	}
 
 	spellModifiersEmbed := discordgo.MessageEmbed{
-		Title:  championAndSkillName,
-		URL:    wikiLink,
-		Color:  embedColor,
-		Fields: fields,
+		Title:       championAndSkillName,
+		URL:         wikiLink,
+		Color:       embedColor,
+		Description: desc,
+		Fields:      fields,
+	}
+
+	notes := spell.Notes
+	if notes == "" {
+		notes = "No additional details."
 	}
 
 	spellNotesEmbed := discordgo.MessageEmbed{
 		Title:       championAndSkillName,
 		URL:         wikiLink,
 		Color:       embedColor,
-		Description: spell.Notes,
+		Description: notes,
 	}
 
 	return SpellEmbeds{General: spellEmbed, Modifiers: spellModifiersEmbed, Notes: spellNotesEmbed}

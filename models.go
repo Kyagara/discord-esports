@@ -16,8 +16,6 @@ type SpellEmbeds struct {
 
 type ChampionEmbeds struct {
 	General discordgo.MessageEmbed
-	Skins   discordgo.MessageEmbed
-	Spells  discordgo.MessageEmbed
 }
 
 type WikiChampion struct {

@@ -24,36 +24,12 @@ func ChampionCommand(session *discordgo.Session, interaction *discordgo.Interact
 	}
 
 	championKey := optionMap["champion"].StringValue()
-
-	embed := &discordgo.MessageEmbed{}
-	components := []discordgo.MessageComponent{discordgo.ActionsRow{Components: []discordgo.MessageComponent{
-		discordgo.Button{Label: "Spells", CustomID: fmt.Sprintf("spells_%v", championKey)},
-		discordgo.Button{Label: "Skins", CustomID: fmt.Sprintf("skins_%v", championKey)},
-	}}}
-
 	champion := championsEmbeds[championKey]
-
-	embedType, ok := optionMap["type"]
-	if !ok || embedType.StringValue() == "" {
-		embed = &champion.General
-	} else {
-		switch embedType.StringValue() {
-		case "spells":
-			embed = &champion.Spells
-			components = []discordgo.MessageComponent{}
-		case "skins":
-			embed = &champion.Skins
-			components = []discordgo.MessageComponent{}
-		default:
-			embed = &champion.General
-		}
-	}
 
 	err := client.session.InteractionRespond(interaction.Interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
-			Embeds:     []*discordgo.MessageEmbed{embed},
-			Components: components,
+			Embeds: []*discordgo.MessageEmbed{&champion.General},
 		},
 	})
 
@@ -67,17 +43,6 @@ func createChampionEmbed(champion *WikiChampion) ChampionEmbeds {
 	if champion.Resource == "" {
 		resource = "None"
 	}
-
-	/*
-		cds := fmt.Sprintf("``Q - %v\nW - %v\nE - %v\nR - %v``", champion.Spells.[0].CooldownBurn, data.Spells[1].CooldownBurn, data.Spells[2].CooldownBurn, data.Spells[3].CooldownBurn)
-		costs := fmt.Sprintf("``Q - %v\nW - %v\nE - %v\nR - %v``", data.Spells[0].CostBurn, data.Spells[1].CostBurn, data.Spells[2].CostBurn, data.Spells[3].CostBurn)
-		ranges := fmt.Sprintf("``Q - %v\nW - %v\nE - %v\nR - %v``", data.Spells[0].RangeBurn, data.Spells[1].RangeBurn, data.Spells[2].RangeBurn, data.Spells[3].RangeBurn)
-	*/ /*
-
-		fields = append(fields, &discordgo.MessageEmbedField{Name: "", Value: ""})
-		fields = append(fields, &discordgo.MessageEmbedField{Name: "Cooldown", Value: cds, Inline: true})
-		fields = append(fields, &discordgo.MessageEmbedField{Name: "Spell Cost", Value: costs, Inline: true})
-		fields = append(fields, &discordgo.MessageEmbedField{Name: "Spell Range", Value: ranges, Inline: true}) */
 
 	tags := champion.Roles
 	if len(tags) == 0 || tags[0] == "" {
