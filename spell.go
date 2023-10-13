@@ -18,76 +18,55 @@ func SpellCommand(session *discordgo.Session, interaction *discordgo.Interaction
 	}
 
 	if interaction.Type == discordgo.InteractionApplicationCommandAutocomplete {
-		if ok := optionMap["champion"].Focused; ok {
-			filteredNames := make(map[string]string)
-			for id, name := range championsNames {
-				if strings.HasPrefix(strings.ToLower(name), strings.ToLower(optionMap["champion"].StringValue())) {
-					filteredNames[name] = id
-				}
-
-				if len(filteredNames) == 20 {
-					break
-				}
-			}
-
-			var choices []*discordgo.ApplicationCommandOptionChoice
-			for id, name := range filteredNames {
-				choices = append(choices, &discordgo.ApplicationCommandOptionChoice{Name: name, Value: id})
-			}
-
-			err := session.InteractionRespond(interaction.Interaction, &discordgo.InteractionResponse{
-				Type: discordgo.InteractionApplicationCommandAutocompleteResult,
-				Data: &discordgo.InteractionResponseData{
-					Choices: choices,
-				},
-			})
-
-			if err != nil {
-				client.logger.Error(fmt.Sprintf("Error sending champion autocomplete: %v", err))
-			}
-
+		champion, ok := optionMap["champion"]
+		if ok && champion.Focused {
+			autoCompleteChampionName(session, interaction, champion.StringValue())
 			return
 		}
 
-		return
-	}
-
-	key := optionMap["champion"].StringValue()
-
-	if ok := optionMap["spells"].StringValue() != ""; ok {
-		spell := strings.Split(optionMap["spell"].StringValue(), ",")
-		spellIndex, err := strconv.Atoi(spell[1])
-		if err != nil {
-			client.logger.Error(fmt.Sprintf("error converting spell index to int: %v", err))
-		}
-
-		err = client.session.InteractionRespond(interaction.Interaction, &discordgo.InteractionResponse{
-			Type: discordgo.InteractionResponseChannelMessageWithSource,
-			Data: &discordgo.InteractionResponseData{
-				Embeds: []*discordgo.MessageEmbed{&spellsEmbeds[key][spell[0]][spellIndex].General},
-				Components: []discordgo.MessageComponent{discordgo.ActionsRow{Components: []discordgo.MessageComponent{
-					discordgo.Button{Label: "Modifiers", CustomID: fmt.Sprintf("modifiers_%v_%v_%v", key, spell[0], spellIndex)},
-					discordgo.Button{Label: "Notes", CustomID: fmt.Sprintf("notes_%v_%v_%v", key, spell[0], spellIndex)},
-				}}},
-			},
-		})
-
-		if err != nil {
-			client.logger.Error(fmt.Sprintf("Error responding with embed: %v", err))
+		spell, ok := optionMap["spell"]
+		if ok && spell.Focused {
+			autoCompleteSpell(session, interaction, optionMap["champion"].StringValue())
 		}
 
 		return
 	}
 
-	embed := championsEmbeds[key].General
-	err := client.session.InteractionRespond(interaction.Interaction, &discordgo.InteractionResponse{
+	championKey := optionMap["champion"].StringValue()
+
+	spell := strings.Split(optionMap["spell"].StringValue(), ",")
+	spellIndex, err := strconv.Atoi(spell[1])
+	if err != nil {
+		client.logger.Error(fmt.Sprintf("error converting spell index to int: %v", err))
+	}
+
+	embed := &discordgo.MessageEmbed{}
+	components := []discordgo.MessageComponent{discordgo.ActionsRow{Components: []discordgo.MessageComponent{
+		discordgo.Button{Label: "Modifiers", CustomID: fmt.Sprintf("modifiers_%v_%v_%v", championKey, spell[0], spellIndex)},
+		discordgo.Button{Label: "Notes", CustomID: fmt.Sprintf("notes_%v_%v_%v", championKey, spell[0], spellIndex)},
+	}}}
+
+	embedType, ok := optionMap["type"]
+	if !ok || embedType.StringValue() == "" {
+		embed = &spellsEmbeds[championKey][spell[0]][spellIndex].General
+	} else {
+		switch embedType.StringValue() {
+		case "modifiers":
+			embed = &spellsEmbeds[championKey][spell[0]][spellIndex].Modifiers
+			components = []discordgo.MessageComponent{}
+		case "notes":
+			embed = &spellsEmbeds[championKey][spell[0]][spellIndex].Notes
+			components = []discordgo.MessageComponent{}
+		default:
+			embed = &spellsEmbeds[championKey][spell[0]][spellIndex].General
+		}
+	}
+
+	err = client.session.InteractionRespond(interaction.Interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
-			Embeds: []*discordgo.MessageEmbed{&embed},
-			Components: []discordgo.MessageComponent{discordgo.ActionsRow{Components: []discordgo.MessageComponent{
-				discordgo.Button{Label: "Spells", CustomID: fmt.Sprintf("spells_%v", key)},
-				discordgo.Button{Label: "Skins", CustomID: fmt.Sprintf("skins_%v", key)},
-			}}},
+			Embeds:     []*discordgo.MessageEmbed{embed},
+			Components: components,
 		},
 	})
 
@@ -226,7 +205,7 @@ func createChampionSpellEmbed(champion *WikiChampion, spell *WikiSpell, key stri
 
 func createSpellInfo(spell *WikiSpell, key string, index int) SpellInfo {
 	var spellFullName string
-	if index == -1 {
+	if key == "P" {
 		spellFullName = fmt.Sprintf("Passive - %v", spell.Name)
 	} else {
 		spellFullName = fmt.Sprintf("%v - %v", key, spell.Name)
@@ -291,5 +270,5 @@ func getSpellRangeOrRadius(rangeOrRadius string) string {
 		return strings.Replace(burn, "/(basedonlevel)", " (based on level)", -1)
 	}
 
-	return strings.Replace(rangeOrRadius, " ", "/", -1)
+	return strings.Replace(rangeOrRadius, " / ", "/", -1)
 }

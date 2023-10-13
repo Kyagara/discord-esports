@@ -68,7 +68,50 @@ type WikiChampion struct {
 		RP          int `json:"rp"`
 		SaleRP      int `json:"saleRp"`
 	} `json:"price"`
-	Lore string `json:"lore"`
+	Lore  string      `json:"lore"`
+	Skins []WikiSkins `json:"skins"`
+}
+
+type WikiSkins struct {
+	Name         string `json:"name"`
+	ID           int    `json:"id"`
+	IsBase       bool   `json:"isBase"`
+	Availability string `json:"availability"`
+	FormatName   string `json:"formatName"`
+	LootEligible bool   `json:"lootEligible"`
+	Cost         any    `json:"cost"`
+	Sale         any    `json:"sale"`
+	Distribution string `json:"distribution"`
+	Rarity       string `json:"rarity"`
+	Chromas      []struct {
+		Name         string   `json:"name"`
+		ID           int      `json:"id"`
+		ChromaPath   string   `json:"chromaPath"`
+		Colors       []string `json:"colors"`
+		Descriptions []struct {
+			Description string `json:"description"`
+			Region      string `json:"region"`
+		} `json:"descriptions"`
+		Rarities []struct {
+			Rarity int    `json:"rarity"`
+			Region string `json:"region"`
+		} `json:"rarities"`
+	} `json:"chromas"`
+	Lore                  string   `json:"lore"`
+	Release               string   `json:"release"`
+	Set                   []string `json:"set"`
+	SplashPath            string   `json:"splashPath"`
+	UncenteredSplashPath  string   `json:"uncenteredSplashPath"`
+	TilePath              string   `json:"tilePath"`
+	LoadScreenPath        string   `json:"loadScreenPath"`
+	LoadScreenVintagePath string   `json:"loadScreenVintagePath"`
+	NewEffects            bool     `json:"newEffects"`
+	NewAnimations         bool     `json:"newAnimations"`
+	NewRecall             bool     `json:"newRecall"`
+	NewVoice              bool     `json:"newVoice"`
+	NewQuotes             bool     `json:"newQuotes"`
+	VoiceActor            []string `json:"voiceActor"`
+	SplashArtist          []string `json:"splashArtist"`
 }
 
 type Stat struct {

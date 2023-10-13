@@ -163,12 +163,15 @@ func (c *Client) loadEnabledCommands() {
 					DescriptionLocalizations: map[discordgo.Locale]string{discordgo.PortugueseBR: "Nome do champion."},
 				},
 				{
-					Name:                     "spell",
-					Autocomplete:             true,
-					NameLocalizations:        map[discordgo.Locale]string{discordgo.PortugueseBR: "habilidade"},
-					Description:              "The champion's spell.",
-					DescriptionLocalizations: map[discordgo.Locale]string{discordgo.PortugueseBR: "A habilidade do champion."},
+					Name:                     "type",
+					NameLocalizations:        map[discordgo.Locale]string{discordgo.PortugueseBR: "tipo"},
+					Description:              "Choose the type of information you want from the champion.",
+					DescriptionLocalizations: map[discordgo.Locale]string{discordgo.PortugueseBR: "Escolha o tipo de informação que você quer desse champion."},
 					Type:                     discordgo.ApplicationCommandOptionString,
+					Choices: []*discordgo.ApplicationCommandOptionChoice{
+						{Name: "Spells", Value: "spells", NameLocalizations: map[discordgo.Locale]string{discordgo.PortugueseBR: "Geral"}},
+						{Name: "Skins", Value: "Skins", NameLocalizations: map[discordgo.Locale]string{discordgo.PortugueseBR: "Modificadores"}},
+					},
 				},
 			},
 		}, Handler: ChampionCommand}
@@ -182,11 +185,31 @@ func (c *Client) loadEnabledCommands() {
 			Options: []*discordgo.ApplicationCommandOption{
 				{
 					Name:                     "champion",
+					Description:              "Champion name.",
+					DescriptionLocalizations: map[discordgo.Locale]string{discordgo.PortugueseBR: "Nome do champion."},
 					Required:                 true,
 					Autocomplete:             true,
 					Type:                     discordgo.ApplicationCommandOptionString,
-					Description:              "Champion name.",
-					DescriptionLocalizations: map[discordgo.Locale]string{discordgo.PortugueseBR: "Nome do champion."},
+				},
+				{
+					Name:                     "spell",
+					NameLocalizations:        map[discordgo.Locale]string{discordgo.PortugueseBR: "habilidade"},
+					Description:              "Spell name.",
+					DescriptionLocalizations: map[discordgo.Locale]string{discordgo.PortugueseBR: "Nome da habilidade."},
+					Required:                 true,
+					Autocomplete:             true,
+					Type:                     discordgo.ApplicationCommandOptionString,
+				},
+				{
+					Name:                     "type",
+					NameLocalizations:        map[discordgo.Locale]string{discordgo.PortugueseBR: "tipo"},
+					Description:              "Choose the type of information you want from the spell.",
+					DescriptionLocalizations: map[discordgo.Locale]string{discordgo.PortugueseBR: "Escolha o tipo de informação que você quer dessa habilidade."},
+					Type:                     discordgo.ApplicationCommandOptionString,
+					Choices: []*discordgo.ApplicationCommandOptionChoice{
+						{Name: "Modifiers", Value: "modifiers", NameLocalizations: map[discordgo.Locale]string{discordgo.PortugueseBR: "Modificadores"}},
+						{Name: "Notes", Value: "notes", NameLocalizations: map[discordgo.Locale]string{discordgo.PortugueseBR: "Notas"}},
+					},
 				},
 			},
 		}, Handler: SpellCommand}

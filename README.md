@@ -15,6 +15,7 @@ This bot uses the Lolesports api, [vlrggapi](https://github.com/axsddlr/vlrggapi
 
 - Script to normalize the data from lolstaticdata.
 - `item` command.
+- Disable button when pressed by a user.
 
 ## Setup
 

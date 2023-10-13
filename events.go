@@ -38,7 +38,7 @@ func interactionsEvent(session *discordgo.Session, interaction *discordgo.Intera
 	if interaction.Type == discordgo.InteractionMessageComponent {
 		id := strings.Split(interaction.MessageComponentData().CustomID, "_")
 
-		if contains(commandButtonsID, id[0]) {
+		if !contains(commandButtonsID, id[0]) {
 			respondWithError(interaction.Interaction, fmt.Errorf("message component id '%s' not found", id[0]))
 			return
 		}
