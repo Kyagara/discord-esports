@@ -16,7 +16,7 @@ func EsportsCommand(session *discordgo.Session, interaction *discordgo.Interacti
 
 	game := optionMap["game"].StringValue()
 
-	var update bool
+	update := false
 	if optionMap["update"] != nil {
 		update = optionMap["update"].BoolValue()
 		if update && hasPermissions(session, interaction) {
@@ -24,13 +24,13 @@ func EsportsCommand(session *discordgo.Session, interaction *discordgo.Interacti
 			tomorrow = time.Date(now.Year(), now.Month(), now.Day()+1, 0, 0, 0, 0, now.Location())
 
 			switch game {
-			case "LOL":
+			case "lol":
 				err := updateLOLData()
 				if err != nil {
 					respondWithError(interaction.Interaction, fmt.Errorf("error updating LOL data: %v", err))
 					return
 				}
-			case "VAL":
+			case "val":
 				err := updateVALData()
 				if err != nil {
 					respondWithError(interaction.Interaction, fmt.Errorf("error updating VAL data: %v", err))
@@ -44,9 +44,9 @@ func EsportsCommand(session *discordgo.Session, interaction *discordgo.Interacti
 	}
 
 	switch game {
-	case "LOL":
+	case "lol":
 		respondWithEmbed(interaction.Interaction, []*discordgo.MessageEmbed{createLOLMessageEmbed()})
-	case "VAL":
+	case "val":
 		respondWithEmbed(interaction.Interaction, []*discordgo.MessageEmbed{createVALMessageEmbed()})
 	}
 }

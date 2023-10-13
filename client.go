@@ -130,12 +130,12 @@ func (c *Client) loadEnabledCommands() {
 						{Name: "LOL", Value: "lol"},
 						{Name: "VAL", Value: "val"},
 					},
-					Options: []*discordgo.ApplicationCommandOption{{
-						Name:                     "update",
-						Type:                     discordgo.ApplicationCommandOptionString,
-						Description:              "Force an update of the upcoming matches.",
-						DescriptionLocalizations: map[discordgo.Locale]string{discordgo.PortugueseBR: "Força uma atualização da lista de partidas."},
-					}},
+				},
+				{
+					Name:                     "update",
+					Type:                     discordgo.ApplicationCommandOptionBoolean,
+					Description:              "Force an update of the upcoming matches.",
+					DescriptionLocalizations: map[discordgo.Locale]string{discordgo.PortugueseBR: "Força uma atualização da lista de partidas."},
 				},
 			}}, Handler: EsportsCommand}
 	}
@@ -161,16 +161,14 @@ func (c *Client) loadEnabledCommands() {
 					Type:                     discordgo.ApplicationCommandOptionString,
 					Description:              "Champion name.",
 					DescriptionLocalizations: map[discordgo.Locale]string{discordgo.PortugueseBR: "Nome do champion."},
-					Options: []*discordgo.ApplicationCommandOption{
-						{
-							Name:                     "spell",
-							Autocomplete:             true,
-							NameLocalizations:        map[discordgo.Locale]string{discordgo.PortugueseBR: "habilidade"},
-							Description:              "The champion's spell.",
-							DescriptionLocalizations: map[discordgo.Locale]string{discordgo.PortugueseBR: "A habilidade do champion."},
-							Type:                     discordgo.ApplicationCommandOptionString,
-						},
-					},
+				},
+				{
+					Name:                     "spell",
+					Autocomplete:             true,
+					NameLocalizations:        map[discordgo.Locale]string{discordgo.PortugueseBR: "habilidade"},
+					Description:              "The champion's spell.",
+					DescriptionLocalizations: map[discordgo.Locale]string{discordgo.PortugueseBR: "A habilidade do champion."},
+					Type:                     discordgo.ApplicationCommandOptionString,
 				},
 			},
 		}, Handler: ChampionCommand}

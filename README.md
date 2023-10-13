@@ -6,14 +6,21 @@ This bot uses the Lolesports api, [vlrggapi](https://github.com/axsddlr/vlrggapi
 
 ## Slash Commands
 
-- lol - Send upcoming league games.
-- val - Send upcoming val games.
-- update - Force all data to update. User needs mod roles set in `config.json`.
-- post - Force all posts to be sent again. User needs mod roles set in `config.json`.
+- esports - Get a list of upcoming matches from a game. User needs one of the mod roles set in `config.json` to use the update option.
 - info - Send information about the bot, includes link for this page, the last time data was updated and posted and all commands.
-- champion - Sends stats for a champion, includes links for a wiki and LoLalytics page.
+- champion - Sends stats for a champion, includes links for a wiki page, LoLalytics page, skins and spells.
+- spell - Sends information about a spell, includes links for its wiki page, video, modifiers and notes.
+
+## Todo
+
+- Script to normalize the data from lolstaticdata.
+- `item` command.
 
 ## Setup
+
+### lolstaticdata
+
+This bot requires the data provided from [lolstaticdata](https://github.com/meraki-analytics/lolstaticdata).
 
 ### Bot Settings
 
@@ -30,7 +37,7 @@ https://discord.com/api/oauth2/authorize?client_id=BOT_ID&permissions=18432&scop
 
 Edit the `config.json.example` and rename it to just `config.json`.
 
-If mod_roles is empty, anyone will be able to use the `post` and `update` commands.
+If mod_roles is empty, anyone will be able to use the `update` option from the `esports` commands.
 
 ### Running
 

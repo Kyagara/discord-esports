@@ -9,7 +9,7 @@ import (
 )
 
 var (
-	commandButtonsID []string = []string{"modifiers", "notes", "skins", "spells", "spell"}
+	commandButtonsID []string = []string{"modifiers", "notes", "spell", "skins", "spells"}
 )
 
 func readyEvent(session *discordgo.Session, ready *discordgo.Ready) {
@@ -43,6 +43,21 @@ func interactionsEvent(session *discordgo.Session, interaction *discordgo.Intera
 			return
 		}
 
+		champion, ok := championsEmbeds[id[1]]
+		if !ok {
+			respondWithError(interaction.Interaction, fmt.Errorf("champion key '%s' not found", id[1]))
+			return
+		}
+
+		switch id[0] {
+		case "skins":
+			respondWithEmbed(interaction.Interaction, []*discordgo.MessageEmbed{&champion.Skins})
+			return
+		case "spells":
+			respondWithEmbed(interaction.Interaction, []*discordgo.MessageEmbed{&champion.Spells})
+			return
+		}
+
 		// id[1] = champion key
 		championSpells, ok := spellsEmbeds[id[1]]
 		if !ok {
@@ -69,6 +84,9 @@ func interactionsEvent(session *discordgo.Session, interaction *discordgo.Intera
 
 		case "notes":
 			respondWithEmbed(interaction.Interaction, []*discordgo.MessageEmbed{&spells[spellIndex].Notes})
+
+		case "spell":
+			respondWithEmbed(interaction.Interaction, []*discordgo.MessageEmbed{&spells[spellIndex].General})
 		}
 
 		return
