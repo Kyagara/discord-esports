@@ -3,8 +3,11 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/bwmarrin/discordgo"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 func newRequest(endpoint string) (*http.Request, error) {
@@ -74,4 +77,30 @@ func respondWithMessage(interaction *discordgo.Interaction, message string) {
 	if err != nil {
 		client.logger.Error(fmt.Sprintf("Error responding with message: %v", err))
 	}
+}
+
+func getDefaultIntString(value string) string {
+	if value != "" {
+		return cases.Title(language.English, cases.NoLower).String(strings.ToLower(value))
+	} else {
+		return "0"
+	}
+}
+
+func getDefaultString(value string) string {
+	if value != "" {
+		return cases.Title(language.English, cases.NoLower).String(strings.ToLower(value))
+	} else {
+		return "None"
+	}
+}
+
+func contains(ids []string, str string) bool {
+	for _, id := range ids {
+		if id == str {
+			return true
+		}
+	}
+
+	return false
 }

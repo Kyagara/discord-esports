@@ -7,11 +7,9 @@
   "update_data_timer": 18000000,
   "post_data_timer": 43200000,
   "commands": {
-    "lol": true,
-    "val": true,
-    "post": true,
-    "update": true,
+    "esports": true,
     "info": true,
-    "champion": true
+    "champion": true,
+    "spell": true
   }
 }

@@ -56,10 +56,6 @@ type LOLEsportsLeagueSchedule struct {
 	TeamB  string
 }
 
-func LOLEsportsCommand(session *discordgo.Session, interaction *discordgo.InteractionCreate) {
-	respondWithEmbed(interaction.Interaction, []*discordgo.MessageEmbed{createLOLMessageEmbed()})
-}
-
 func updateLOLData() error {
 	client.logger.Info("Updating LOL data.")
 	lolSchedule = make(map[string][]LOLEsportsLeagueSchedule)

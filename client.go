@@ -7,14 +7,12 @@ import (
 	"os/signal"
 	"time"
 
-	"github.com/Kyagara/equinox"
 	"github.com/bwmarrin/discordgo"
 	"go.uber.org/zap"
 )
 
 type Client struct {
 	session  *discordgo.Session
-	equinox  *equinox.Equinox
 	config   *Configuration
 	logger   *zap.Logger
 	commands map[string]Command
@@ -34,12 +32,10 @@ type Configuration struct {
 	UpdateDateTimer int      `json:"update_data_timer"`
 	PostDataTimer   int      `json:"post_data_timer"`
 	Commands        struct {
-		LOL      bool `json:"lol"`
-		VAL      bool `json:"val"`
-		Post     bool `json:"post"`
-		Update   bool `json:"update"`
+		Esports  bool `json:"esports"`
 		Info     bool `json:"info"`
 		Champion bool `json:"champion"`
+		Spell    bool `json:"spell"`
 	} `json:"commands"`
 }
 
@@ -97,11 +93,6 @@ func newClient() (*Client, error) {
 		logger.Info("You have not set any mod_roles, anyone will be able to use the post and update commands, this can be abused.")
 	}
 
-	equinox, err := equinox.NewClient("")
-	if err != nil {
-		return nil, fmt.Errorf("error starting equinox client: %v", err)
-	}
-
 	session, err := discordgo.New("Bot " + config.Token)
 	if err != nil {
 		return nil, fmt.Errorf("error creating Discord session: %v", err)
@@ -109,7 +100,6 @@ func newClient() (*Client, error) {
 
 	client := &Client{
 		session:  session,
-		equinox:  equinox,
 		config:   &config,
 		logger:   logger,
 		commands: map[string]Command{},
@@ -124,28 +114,30 @@ func newClient() (*Client, error) {
 func (c *Client) loadEnabledCommands() {
 	client.commands = make(map[string]Command)
 
-	if c.config.Commands.LOL {
-		c.commands["lol"] = Command{Interaction: &discordgo.ApplicationCommand{
-			Name:                     "lol",
-			Description:              "Send a list of upcoming League of Legends games.",
-			DescriptionLocalizations: &map[discordgo.Locale]string{discordgo.PortugueseBR: "Envia uma lista de próximos jogos de League of Legends."},
-		}, Handler: LOLEsportsCommand}
-	}
-
-	if c.config.Commands.VAL {
-		c.commands["val"] = Command{Interaction: &discordgo.ApplicationCommand{
-			Name:                     "val",
-			Description:              "Send a list of upcoming Valorant games.",
-			DescriptionLocalizations: &map[discordgo.Locale]string{discordgo.PortugueseBR: "Envia uma lista de próximos jogos de Valorant."},
-		}, Handler: VALEsportsCommand}
-	}
-
-	if c.config.Commands.Update {
-		c.commands["update"] = Command{Interaction: &discordgo.ApplicationCommand{
-			Name:                     "update",
-			Description:              "Force all data to update.",
-			DescriptionLocalizations: &map[discordgo.Locale]string{discordgo.PortugueseBR: "Força todos os dados a serem atualizados."},
-		}, Handler: UpdateCommand}
+	if c.config.Commands.Esports {
+		c.commands["esports"] = Command{Interaction: &discordgo.ApplicationCommand{
+			Name:                     "esports",
+			Description:              "Send a list of upcoming games from the provided game.",
+			DescriptionLocalizations: &map[discordgo.Locale]string{discordgo.PortugueseBR: "Envia uma lista de próximas partidas do jogo escolhido."},
+			Options: []*discordgo.ApplicationCommandOption{
+				{
+					Name:                     "game",
+					Required:                 true,
+					Type:                     discordgo.ApplicationCommandOptionString,
+					Description:              "Force an update of the upcoming matches.",
+					DescriptionLocalizations: map[discordgo.Locale]string{discordgo.PortugueseBR: "Força uma atualização da lista de partidas."},
+					Choices: []*discordgo.ApplicationCommandOptionChoice{
+						{Name: "LOL", Value: "lol"},
+						{Name: "VAL", Value: "val"},
+					},
+					Options: []*discordgo.ApplicationCommandOption{{
+						Name:                     "update",
+						Type:                     discordgo.ApplicationCommandOptionString,
+						Description:              "Force an update of the upcoming matches.",
+						DescriptionLocalizations: map[discordgo.Locale]string{discordgo.PortugueseBR: "Força uma atualização da lista de partidas."},
+					}},
+				},
+			}}, Handler: EsportsCommand}
 	}
 
 	if c.config.Commands.Info {
@@ -154,14 +146,6 @@ func (c *Client) loadEnabledCommands() {
 			Description:              "Send information about the bot.",
 			DescriptionLocalizations: &map[discordgo.Locale]string{discordgo.PortugueseBR: "Envia informação sobre o bot."},
 		}, Handler: InfoCommand}
-	}
-
-	if c.config.Commands.Post {
-		c.commands["post"] = Command{Interaction: &discordgo.ApplicationCommand{
-			Name:                     "post",
-			Description:              "Force all data to be sent again.",
-			DescriptionLocalizations: &map[discordgo.Locale]string{discordgo.PortugueseBR: "Força todos os dados a serem enviados."},
-		}, Handler: PostCommand}
 	}
 
 	if c.config.Commands.Champion {
@@ -177,23 +161,37 @@ func (c *Client) loadEnabledCommands() {
 					Type:                     discordgo.ApplicationCommandOptionString,
 					Description:              "Champion name.",
 					DescriptionLocalizations: map[discordgo.Locale]string{discordgo.PortugueseBR: "Nome do champion."},
-				},
-				{
-					Name:                     "spell",
-					NameLocalizations:        map[discordgo.Locale]string{discordgo.PortugueseBR: "habilidade"},
-					Description:              "The champion's spell.",
-					DescriptionLocalizations: map[discordgo.Locale]string{discordgo.PortugueseBR: "A habilidade do champion."},
-					Type:                     discordgo.ApplicationCommandOptionInteger,
-					Choices: []*discordgo.ApplicationCommandOptionChoice{
-						{Name: "Passive", NameLocalizations: map[discordgo.Locale]string{discordgo.PortugueseBR: "Passiva"}, Value: -1},
-						{Name: "Q", Value: 0},
-						{Name: "W", Value: 1},
-						{Name: "E", Value: 2},
-						{Name: "R", Value: 3},
+					Options: []*discordgo.ApplicationCommandOption{
+						{
+							Name:                     "spell",
+							Autocomplete:             true,
+							NameLocalizations:        map[discordgo.Locale]string{discordgo.PortugueseBR: "habilidade"},
+							Description:              "The champion's spell.",
+							DescriptionLocalizations: map[discordgo.Locale]string{discordgo.PortugueseBR: "A habilidade do champion."},
+							Type:                     discordgo.ApplicationCommandOptionString,
+						},
 					},
 				},
 			},
 		}, Handler: ChampionCommand}
+	}
+
+	if c.config.Commands.Spell {
+		c.commands["spell"] = Command{Interaction: &discordgo.ApplicationCommand{
+			Name:                     "spell",
+			Description:              "Get spells from a League of Legends champion.",
+			DescriptionLocalizations: &map[discordgo.Locale]string{discordgo.PortugueseBR: "Envia informações de spells de um de champion League of Legends."},
+			Options: []*discordgo.ApplicationCommandOption{
+				{
+					Name:                     "champion",
+					Required:                 true,
+					Autocomplete:             true,
+					Type:                     discordgo.ApplicationCommandOptionString,
+					Description:              "Champion name.",
+					DescriptionLocalizations: map[discordgo.Locale]string{discordgo.PortugueseBR: "Nome do champion."},
+				},
+			},
+		}, Handler: SpellCommand}
 	}
 }
 

@@ -2,8 +2,14 @@ package main
 
 import (
 	"fmt"
+	"strconv"
+	"strings"
 
 	"github.com/bwmarrin/discordgo"
+)
+
+var (
+	commandButtonsID []string = []string{"modifiers", "notes", "skins", "spells", "spell"}
 )
 
 func readyEvent(session *discordgo.Session, ready *discordgo.Ready) {
@@ -26,6 +32,45 @@ func readyEvent(session *discordgo.Session, ready *discordgo.Ready) {
 
 func interactionsEvent(session *discordgo.Session, interaction *discordgo.InteractionCreate) {
 	if *removeFlag || *registerFlag {
+		return
+	}
+
+	if interaction.Type == discordgo.InteractionMessageComponent {
+		id := strings.Split(interaction.MessageComponentData().CustomID, "_")
+
+		if contains(commandButtonsID, id[0]) {
+			respondWithError(interaction.Interaction, fmt.Errorf("message component id '%s' not found", id[0]))
+			return
+		}
+
+		// id[1] = champion key
+		championSpells, ok := spellsEmbeds[id[1]]
+		if !ok {
+			respondWithError(interaction.Interaction, fmt.Errorf("champion key '%s' not found", id[1]))
+			return
+		}
+
+		// id[2] = spell key
+		spells, ok := championSpells[id[2]]
+		if !ok {
+			respondWithError(interaction.Interaction, fmt.Errorf("spell key '%s' not found", id[2]))
+			return
+		}
+
+		// id[3] = spell index
+		spellIndex, err := strconv.Atoi(id[3])
+		if err != nil {
+			client.logger.Error(fmt.Sprintf("error converting spell index to int: %v", err))
+		}
+
+		switch id[0] {
+		case "modifiers":
+			respondWithEmbed(interaction.Interaction, []*discordgo.MessageEmbed{&spells[spellIndex].Modifiers})
+
+		case "notes":
+			respondWithEmbed(interaction.Interaction, []*discordgo.MessageEmbed{&spells[spellIndex].Notes})
+		}
+
 		return
 	}
 

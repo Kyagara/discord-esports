@@ -2,201 +2,177 @@ package main
 
 import (
 	"fmt"
-	"regexp"
 	"strconv"
 	"strings"
-	"time"
 
-	"github.com/Kyagara/equinox/clients/ddragon"
 	"github.com/bwmarrin/discordgo"
 )
 
-var spellKeysDict = map[int]string{
-	-1: "P",
-	0:  "Q",
-	1:  "W",
-	2:  "E",
-	3:  "R",
-}
-
 func ChampionCommand(session *discordgo.Session, interaction *discordgo.InteractionCreate) {
 	options := interaction.ApplicationCommandData().Options
-
-	notUpToDate := time.Since(ddVersionUpdated) > time.Duration(4*time.Minute)
-
-	if len(championsNames) == 0 || notUpToDate {
-		ddVersion, err := client.equinox.DDragon.Version.Latest()
-		if err != nil {
-			respondWithError(interaction.Interaction, err)
-			return
-		}
-
-		ddVersionUpdated = time.Now()
-
-		champions, err = client.equinox.DDragon.Champion.AllChampions(ddVersion, ddragon.EnUS)
-		if err != nil {
-			respondWithError(interaction.Interaction, err)
-			return
-		}
-
-		championsNames = make(map[string]string)
-		for _, c := range champions {
-			championsNames[c.Name] = c.ID
-		}
+	optionMap := make(map[string]*discordgo.ApplicationCommandInteractionDataOption, len(options))
+	for _, opt := range options {
+		optionMap[opt.Name] = opt
 	}
 
 	if interaction.Type == discordgo.InteractionApplicationCommandAutocomplete {
-		filteredNames := make(map[string]string)
-		for id, name := range championsNames {
-			if strings.HasPrefix(strings.ToLower(name), strings.ToLower(options[0].StringValue())) {
-				filteredNames[name] = id
+		if ok := optionMap["champion"].Focused; ok {
+			filteredNames := make(map[string]string)
+			for id, name := range championsNames {
+				if strings.HasPrefix(strings.ToLower(name), strings.ToLower(optionMap["champion"].StringValue())) {
+					filteredNames[name] = id
+				}
+
+				if len(filteredNames) == 20 {
+					break
+				}
 			}
 
-			if len(filteredNames) == 20 {
-				break
+			var choices []*discordgo.ApplicationCommandOptionChoice
+			for id, name := range filteredNames {
+				choices = append(choices, &discordgo.ApplicationCommandOptionChoice{Name: name, Value: id})
+			}
+
+			err := session.InteractionRespond(interaction.Interaction, &discordgo.InteractionResponse{
+				Type: discordgo.InteractionApplicationCommandAutocompleteResult,
+				Data: &discordgo.InteractionResponseData{
+					Choices: choices,
+				},
+			})
+
+			if err != nil {
+				client.logger.Error(fmt.Sprintf("Error sending champion autocomplete: %v", err))
+			}
+
+			return
+		}
+
+		if ok := optionMap["spell"].Focused; ok {
+			spells := spellsInfo[optionMap["champion"].StringValue()]
+
+			var choices []*discordgo.ApplicationCommandOptionChoice
+			for _, spell := range spells {
+				choices = append(choices, &discordgo.ApplicationCommandOptionChoice{Name: spell.FullName, Value: fmt.Sprintf("%v,%v", spell.Key, spell.Index)})
+			}
+
+			err := session.InteractionRespond(interaction.Interaction, &discordgo.InteractionResponse{
+				Type: discordgo.InteractionApplicationCommandAutocompleteResult,
+				Data: &discordgo.InteractionResponseData{
+					Choices: choices,
+				},
+			})
+
+			if err != nil {
+				client.logger.Error(fmt.Sprintf("Error sending spell autocomplete: %v", err))
 			}
 		}
 
-		var choices []*discordgo.ApplicationCommandOptionChoice
-		for id, name := range filteredNames {
-			choices = append(choices, &discordgo.ApplicationCommandOptionChoice{Name: name, Value: id})
+		return
+	}
+
+	key := optionMap["champion"].StringValue()
+
+	if ok := optionMap["spell"].StringValue() != ""; ok {
+		spell := strings.Split(optionMap["spell"].StringValue(), ",")
+		spellIndex, err := strconv.Atoi(spell[1])
+		if err != nil {
+			client.logger.Error(fmt.Sprintf("error converting spell index to int: %v", err))
 		}
 
-		err := session.InteractionRespond(interaction.Interaction, &discordgo.InteractionResponse{
-			Type: discordgo.InteractionApplicationCommandAutocompleteResult,
+		err = client.session.InteractionRespond(interaction.Interaction, &discordgo.InteractionResponse{
+			Type: discordgo.InteractionResponseChannelMessageWithSource,
 			Data: &discordgo.InteractionResponseData{
-				Choices: choices,
+				Embeds: []*discordgo.MessageEmbed{&spellsEmbeds[key][spell[0]][spellIndex].General},
+				Components: []discordgo.MessageComponent{discordgo.ActionsRow{Components: []discordgo.MessageComponent{
+					discordgo.Button{Label: "Modifiers", CustomID: fmt.Sprintf("modifiers_%v_%v_%v", key, spell[0], spellIndex)},
+					discordgo.Button{Label: "Notes", CustomID: fmt.Sprintf("notes_%v_%v_%v", key, spell[0], spellIndex)},
+				}}},
 			},
 		})
 
 		if err != nil {
-			client.logger.Error(fmt.Sprintf("Error sending autocomplete: %v", err))
+			client.logger.Error(fmt.Sprintf("Error responding with embed: %v", err))
 		}
 
 		return
 	}
 
-	champion, ok := champions[options[0].StringValue()]
-	if !ok {
-		respondWithError(interaction.Interaction, fmt.Errorf("champion '%s' not found", options[0].StringValue()))
-		return
-	}
+	embed := championsEmbeds[key].General
+	err := client.session.InteractionRespond(interaction.Interaction, &discordgo.InteractionResponse{
+		Type: discordgo.InteractionResponseChannelMessageWithSource,
+		Data: &discordgo.InteractionResponseData{
+			Embeds: []*discordgo.MessageEmbed{&embed},
+			Components: []discordgo.MessageComponent{discordgo.ActionsRow{Components: []discordgo.MessageComponent{
+				discordgo.Button{Label: "Spells", CustomID: fmt.Sprintf("spells_%v", key)},
+				discordgo.Button{Label: "Skins", CustomID: fmt.Sprintf("skins_%v", key)},
+			}}},
+		},
+	})
 
-	data, err := client.equinox.DDragon.Champion.ByName(ddVersion, ddragon.EnUS, options[0].StringValue())
 	if err != nil {
-		respondWithError(interaction.Interaction, err)
-		return
+		client.logger.Error(fmt.Sprintf("Error responding with embed: %v", err))
 	}
+}
 
-	if options[1] != nil {
-		optionValue := options[1].IntValue()
-
-		var name string
-		var description string
-		var image string
-		rangeBurn := "0"
-		cooldownBurn := "0"
-		costBurn := "0"
-		key, err := strconv.Atoi(data.Key)
-		if err != nil {
-			client.logger.Error(fmt.Sprintf("error converting championg key to int: %v", err))
-		}
-
-		if optionValue == -1 {
-			name = data.Passive.Name
-			description = data.Passive.Description
-			image = data.Passive.Image.Full
-		} else {
-			name = data.Spells[optionValue].Name
-			description = data.Spells[optionValue].Description
-			image = data.Spells[optionValue].Image.Full
-			rangeBurn = data.Spells[optionValue].RangeBurn
-			cooldownBurn = data.Spells[optionValue].CooldownBurn
-			costBurn = data.Spells[optionValue].CostBurn
-		}
-
-		description = strings.Replace(description, "<br><br>", "\n", -1)
-		description = strings.Replace(description, "<spellName>", "`", -1)
-		description = strings.Replace(description, "</spellName>", "`", -1)
-
-		r := regexp.MustCompile(`<.*?>`)
-		description = r.ReplaceAllString(description, "")
-
-		video := fmt.Sprintf("https://d28xe8vt774jo5.cloudfront.net/champion-abilities/%04d/ability_%04d_%v1.webm", key, key, spellKeysDict[int(optionValue)])
-
-		embed := &discordgo.MessageEmbed{
-			Title:       name,
-			URL:         video,
-			Color:       embedColor,
-			Description: description,
-			Thumbnail:   &discordgo.MessageEmbedThumbnail{URL: fmt.Sprintf("https://ddragon.leagueoflegends.com/cdn/%v/img/spell/%v", ddVersion, image)},
-			Fields: []*discordgo.MessageEmbedField{
-				{Name: "Links", Value: fmt.Sprintf("[Wiki](https://leagueoflegends.fandom.com/wiki/%v/LoL#%v) - [Video](%v)", strings.Replace(champion.Name, " ", "_", -1), strings.Replace(name, " ", "", -1), video)},
-				{Name: "Range", Value: fmt.Sprintf("``%v``", rangeBurn), Inline: true},
-				{Name: "Cost", Value: fmt.Sprintf("``%v``", costBurn), Inline: true},
-				{Name: "Cooldown", Value: fmt.Sprintf("``%v``", cooldownBurn), Inline: true},
-			}}
-
-		respondWithEmbed(interaction.Interaction, []*discordgo.MessageEmbed{embed})
-		return
-	}
-
-	resource := champion.Partype
-	if champion.Partype == "" {
+func createChampionEmbed(champion *WikiChampion) ChampionEmbeds {
+	resource := champion.Resource
+	if champion.Resource == "" {
 		resource = "None"
 	}
 
 	fields := []*discordgo.MessageEmbedField{
-		{Name: "HP | Regen", Value: fmt.Sprintf("``%v (+ %v)``\n``%v (+ %v)``", champion.Stats.HP, champion.Stats.HPPerLevel, champion.Stats.HPRegen, champion.Stats.HPRegenPerLevel), Inline: true},
+		{Name: "HP | Regen", Value: fmt.Sprintf("``%v (+ %v)``\n``%v (+ %v)``", champion.Stats.Health.Flat, champion.Stats.Health.PerLevel, champion.Stats.HealthRegen.Flat, champion.Stats.HealthRegen.PerLevel), Inline: true},
 	}
 
-	if champion.Stats.MP != 0 && champion.Stats.MPPerLevel != 0 {
-		fields = append(fields, &discordgo.MessageEmbedField{Name: "MP | Regen", Value: fmt.Sprintf("``%v (+ %v)``\n``%v (+ %v)``", champion.Stats.MP, champion.Stats.MPPerLevel, champion.Stats.MPRegen, champion.Stats.MPRegenPerLevel), Inline: true})
+	if champion.Stats.Mana.Flat != 0 && champion.Stats.Mana.PerLevel != 0 {
+		fields = append(fields, &discordgo.MessageEmbedField{Name: "MP | Regen", Value: fmt.Sprintf("``%v (+ %v)``\n``%v (+ %v)``", champion.Stats.Mana.Flat, champion.Stats.Mana.PerLevel, champion.Stats.ManaRegen.Flat, champion.Stats.ManaRegen.PerLevel), Inline: true})
 	}
 
-	fields = append(fields, &discordgo.MessageEmbedField{Name: "Armor | MR", Value: fmt.Sprintf("``%v (+ %v)``\n``%v (+ %v)``", champion.Stats.Armor, champion.Stats.ArmorPerLevel, champion.Stats.SpellBlock, champion.Stats.SpellBlockPerLevel), Inline: true})
+	fields = append(fields, &discordgo.MessageEmbedField{Name: "Armor | MR", Value: fmt.Sprintf("``%v (+ %v)``\n``%v (+ %v)``", champion.Stats.Armor.Flat, champion.Stats.Armor.PerLevel, champion.Stats.MagicResistance.Flat, champion.Stats.MagicResistance.PerLevel), Inline: true})
 
 	fields = append(fields, &discordgo.MessageEmbedField{Name: "", Value: ""})
-	fields = append(fields, &discordgo.MessageEmbedField{Name: "Attack Damage", Value: fmt.Sprintf("``%v (+ %v)``", champion.Stats.AttackDamage, champion.Stats.AttackDamagePerLevel), Inline: true})
+	fields = append(fields, &discordgo.MessageEmbedField{Name: "Attack Damage", Value: fmt.Sprintf("``%v (+ %v)``", champion.Stats.AttackDamage.Flat, champion.Stats.AttackDamage.PerLevel), Inline: true})
 
-	if champion.Stats.AttackSpeed != 0 && champion.Stats.AttackSpeedPerLevel != 0 {
-		fields = append(fields, &discordgo.MessageEmbedField{Name: "Attack Speed", Value: fmt.Sprintf("``%v (+ %v)``", champion.Stats.AttackSpeed, champion.Stats.AttackSpeedPerLevel), Inline: true})
+	if champion.Stats.AttackSpeed.Flat != 0 && champion.Stats.AttackSpeed.PerLevel != 0 {
+		fields = append(fields, &discordgo.MessageEmbedField{Name: "Attack Speed", Value: fmt.Sprintf("``%v (+ %v)``", champion.Stats.AttackSpeed.Flat, champion.Stats.AttackSpeed.PerLevel), Inline: true})
 	}
 
-	if champion.Stats.Crit != 0 && champion.Stats.CritPerLevel != 0 {
-		fields = append(fields, &discordgo.MessageEmbedField{Name: "Crit", Value: fmt.Sprintf("``%v (+ %v)``", champion.Stats.Crit, champion.Stats.CritPerLevel), Inline: true})
-	}
+	/* 	if champion.Stats.Crit != 0 && champion.Stats.CritPerLevel != 0 {
+		fields = append(fields, &discordgo.MessageEmbedField{Name: "Crit", Value: fmt.Sprintf("``%v (+ %v)``", champion.Stats.CriticalStrikeDamage, champion.Stats.CritPerLevel), Inline: true})
+	} */
 
-	cds := fmt.Sprintf("``Q - %v\nW - %v\nE - %v\nR - %v``", data.Spells[0].CooldownBurn, data.Spells[1].CooldownBurn, data.Spells[2].CooldownBurn, data.Spells[3].CooldownBurn)
-	costs := fmt.Sprintf("``Q - %v\nW - %v\nE - %v\nR - %v``", data.Spells[0].CostBurn, data.Spells[1].CostBurn, data.Spells[2].CostBurn, data.Spells[3].CostBurn)
-	ranges := fmt.Sprintf("``Q - %v\nW - %v\nE - %v\nR - %v``", data.Spells[0].RangeBurn, data.Spells[1].RangeBurn, data.Spells[2].RangeBurn, data.Spells[3].RangeBurn)
+	/*
+		cds := fmt.Sprintf("``Q - %v\nW - %v\nE - %v\nR - %v``", champion.Spells.[0].CooldownBurn, data.Spells[1].CooldownBurn, data.Spells[2].CooldownBurn, data.Spells[3].CooldownBurn)
+		costs := fmt.Sprintf("``Q - %v\nW - %v\nE - %v\nR - %v``", data.Spells[0].CostBurn, data.Spells[1].CostBurn, data.Spells[2].CostBurn, data.Spells[3].CostBurn)
+		ranges := fmt.Sprintf("``Q - %v\nW - %v\nE - %v\nR - %v``", data.Spells[0].RangeBurn, data.Spells[1].RangeBurn, data.Spells[2].RangeBurn, data.Spells[3].RangeBurn)
+	*/ /*
+
+		fields = append(fields, &discordgo.MessageEmbedField{Name: "", Value: ""})
+		fields = append(fields, &discordgo.MessageEmbedField{Name: "Cooldown", Value: cds, Inline: true})
+		fields = append(fields, &discordgo.MessageEmbedField{Name: "Spell Cost", Value: costs, Inline: true})
+		fields = append(fields, &discordgo.MessageEmbedField{Name: "Spell Range", Value: ranges, Inline: true}) */
 
 	fields = append(fields, &discordgo.MessageEmbedField{Name: "", Value: ""})
-	fields = append(fields, &discordgo.MessageEmbedField{Name: "Cooldown", Value: cds, Inline: true})
-	fields = append(fields, &discordgo.MessageEmbedField{Name: "Spell Cost", Value: costs, Inline: true})
-	fields = append(fields, &discordgo.MessageEmbedField{Name: "Spell Range", Value: ranges, Inline: true})
+	fields = append(fields, &discordgo.MessageEmbedField{Name: "Range", Value: fmt.Sprintf("``%v``", champion.Stats.AttackRange.Flat), Inline: true})
+	fields = append(fields, &discordgo.MessageEmbedField{Name: "Movement", Value: fmt.Sprintf("``%v``", champion.Stats.MovementSpeed.Flat), Inline: true})
+	fields = append(fields, &discordgo.MessageEmbedField{Name: "Resource", Value: resource, Inline: true})
 
-	fields = append(fields, &discordgo.MessageEmbedField{Name: "", Value: ""})
-	fields = append(fields, &discordgo.MessageEmbedField{Name: "Range", Value: fmt.Sprintf("``%v``", champion.Stats.AttackRange), Inline: true})
-	fields = append(fields, &discordgo.MessageEmbedField{Name: "Movement", Value: fmt.Sprintf("``%v``", champion.Stats.MovementSpeed), Inline: true})
-	fields = append(fields, &discordgo.MessageEmbedField{Name: "Resource", Value: fmt.Sprintf("``%v``", resource), Inline: true})
-
-	tags := champion.Tags
+	tags := champion.Roles
 	if len(tags) == 0 || tags[0] == "" {
 		tags = []string{"None"}
 	}
 
-	embed := &discordgo.MessageEmbed{
+	championEmbed := discordgo.MessageEmbed{
 		Title: fmt.Sprintf("%s, %s", champion.Name, champion.Title),
-		URL:   fmt.Sprintf("https://www.leagueoflegends.com/en-us/champions/%s/", champion.ID),
+		URL:   fmt.Sprintf("https://www.leagueoflegends.com/en-us/champions/%s/", champion.Key),
 		Color: embedColor,
 		Thumbnail: &discordgo.MessageEmbedThumbnail{
-			URL: fmt.Sprintf("https://ddragon.leagueoflegends.com/cdn/%s/img/champion/%s.png", ddVersion, champion.ID),
+			URL: champion.Icon,
 		},
-		Description: fmt.Sprintf("[Wiki](https://leagueoflegends.fandom.com/wiki/%s/LoL) - [LoLalytics](https://lolalytics.com/lol/%s/build/)", strings.Replace(champion.Name, " ", "_", 1), strings.ToLower(champion.ID)),
+		Description: fmt.Sprintf("[Wiki](https://leagueoflegends.fandom.com/wiki/%s/LoL) - [LoLalytics](https://lolalytics.com/lol/%s/build/)", strings.Replace(champion.Name, " ", "_", 1), strings.ToLower(champion.Key)),
 		Fields:      fields,
 		Footer:      &discordgo.MessageEmbedFooter{Text: strings.Join(tags, ", ")},
 	}
 
-	respondWithEmbed(interaction.Interaction, []*discordgo.MessageEmbed{embed})
+	return ChampionEmbeds{General: championEmbed}
 }

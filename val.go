@@ -39,10 +39,6 @@ type VALEsportsTournamentSchedule struct {
 	TeamB      string
 }
 
-func VALEsportsCommand(session *discordgo.Session, interaction *discordgo.InteractionCreate) {
-	respondWithEmbed(interaction.Interaction, []*discordgo.MessageEmbed{createVALMessageEmbed()})
-}
-
 func updateVALData() error {
 	client.logger.Info("Updating VAL data.")
 	valSchedule = make(map[string][]VALEsportsTournamentSchedule)
