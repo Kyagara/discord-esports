@@ -195,7 +195,11 @@ func getSpellStats(wikiSpell WikiSpell, championName string, championID int, spe
 			for _, modifier := range wikiLeveling.Modifiers {
 				modifiersValues := []string{}
 				for _, value := range modifier.Values {
-					modifiersValues = append(modifiersValues, fmt.Sprintf("%v", value))
+					if value == math.Trunc(value) {
+						modifiersValues = append(modifiersValues, fmt.Sprintf("%v", value))
+					} else {
+						modifiersValues = append(modifiersValues, fmt.Sprintf("%.2f", value))
+					}
 				}
 
 				values := strings.Join(modifiersValues, "/")
@@ -325,7 +329,11 @@ func getSpellCost(wikiCost WikiSpellCost) string {
 	var costs []string
 	for _, modifier := range wikiCost.Modifiers {
 		for _, value := range modifier.Values {
-			costs = append(costs, fmt.Sprintf("%v", value))
+			if value == math.Trunc(value) {
+				costs = append(costs, fmt.Sprintf("%v", value))
+			} else {
+				costs = append(costs, fmt.Sprintf("%.2f", value))
+			}
 		}
 	}
 
