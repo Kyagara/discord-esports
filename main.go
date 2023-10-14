@@ -1,6 +1,7 @@
 package main
 
 import (
+	"discord-esports/models"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -62,12 +63,16 @@ func main() {
 	championsNames = make(map[string]string)
 
 	for _, f := range files {
-		file, err := os.ReadFile(fmt.Sprintf("./champions/%v", f.Name()))
+		if f.IsDir() {
+			continue
+		}
+
+		file, err := os.ReadFile(fmt.Sprintf("./champions/normalized/%v", f.Name()))
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		champion := WikiChampion{}
+		champion := models.Champion{}
 		err = json.Unmarshal(file, &champion)
 		if err != nil {
 			log.Fatal(err)

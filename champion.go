@@ -1,11 +1,16 @@
 package main
 
 import (
+	"discord-esports/models"
 	"fmt"
 	"strings"
 
 	"github.com/bwmarrin/discordgo"
 )
+
+type ChampionEmbeds struct {
+	General discordgo.MessageEmbed
+}
 
 func ChampionCommand(session *discordgo.Session, interaction *discordgo.InteractionCreate) {
 	options := interaction.ApplicationCommandData().Options
@@ -38,41 +43,32 @@ func ChampionCommand(session *discordgo.Session, interaction *discordgo.Interact
 	}
 }
 
-func createChampionEmbed(champion *WikiChampion) ChampionEmbeds {
-	resource := champion.Resource
-	if champion.Resource == "" {
-		resource = "None"
-	}
-
-	tags := champion.Roles
-	if len(tags) == 0 || tags[0] == "" {
-		tags = []string{"None"}
-	}
-
+func createChampionEmbed(champion *models.Champion) ChampionEmbeds {
 	championEmbed := discordgo.MessageEmbed{
-		Title: fmt.Sprintf("%s, %s", champion.Name, champion.Title),
-		URL:   fmt.Sprintf("https://www.leagueoflegends.com/en-us/champions/%s/", champion.Key),
+		Title: champion.FullTitle,
+		URL:   champion.OfficialPage,
 		Color: embedColor,
 		Thumbnail: &discordgo.MessageEmbedThumbnail{
 			URL: champion.Icon,
 		},
-		Description: fmt.Sprintf("[Wiki](https://leagueoflegends.fandom.com/wiki/%s/LoL) - [LoLalytics](https://lolalytics.com/lol/%s/build/)\n\n%v", strings.Replace(champion.Name, " ", "_", 1), strings.ToLower(champion.Key), champion.Lore),
+		Description: fmt.Sprintf("[Wiki](%s) - [LoLalytics](https://lolalytics.com/lol/%s/build/)\n\n%v", champion.WikiPage, strings.ToLower(champion.Key), champion.Lore),
 		Fields: []*discordgo.MessageEmbedField{
-			{Name: "HP | Regen", Value: fmt.Sprintf("%v (+ %v)\n%v (+ %v)", champion.Stats.Health.Flat, champion.Stats.Health.PerLevel, champion.Stats.HealthRegen.Flat, champion.Stats.HealthRegen.PerLevel), Inline: true},
-			{Name: "MP | Regen", Value: fmt.Sprintf("%v (+ %v)\n%v (+ %v)", champion.Stats.Mana.Flat, champion.Stats.Mana.PerLevel, champion.Stats.ManaRegen.Flat, champion.Stats.ManaRegen.PerLevel), Inline: true},
-			{Name: "Armor | MR", Value: fmt.Sprintf("%v (+ %v)\n%v (+ %v)", champion.Stats.Armor.Flat, champion.Stats.Armor.PerLevel, champion.Stats.MagicResistance.Flat, champion.Stats.MagicResistance.PerLevel), Inline: true},
+			{Name: "HP | Regen", Value: fmt.Sprintf("%v\n%v", champion.Stats.Health, champion.Stats.HealthRegen), Inline: true},
+			{Name: "MP | Regen", Value: fmt.Sprintf("%v\n%v", champion.Stats.Mana, champion.Stats.ManaRegen), Inline: true},
+			{Name: "Armor | MR", Value: fmt.Sprintf("%v\n%v", champion.Stats.Armor, champion.Stats.MagicResistance), Inline: true},
 			{Name: "", Value: ""},
-			{Name: "Attack Range", Value: fmt.Sprintf("%v", champion.Stats.AttackRange.Flat), Inline: true},
-			{Name: "Attack Damage", Value: fmt.Sprintf("%v (+ %v)", champion.Stats.AttackDamage.Flat, champion.Stats.AttackDamage.PerLevel), Inline: true},
-			{Name: "Attack Speed", Value: fmt.Sprintf("%v (+ %v)", champion.Stats.AttackSpeed.Flat, champion.Stats.AttackSpeed.PerLevel), Inline: true},
+			{Name: "Attack Range", Value: fmt.Sprintf("%v", champion.Stats.AttackRange), Inline: true},
+			{Name: "Attack Damage", Value: fmt.Sprintf("%v", champion.Stats.AttackDamage), Inline: true},
+			{Name: "Attack Speed", Value: fmt.Sprintf("%v", champion.Stats.AttackSpeed), Inline: true},
 			{Name: "", Value: ""},
-			{Name: "Movement", Value: fmt.Sprintf("%v", champion.Stats.MovementSpeed.Flat), Inline: true},
+			{Name: "Movement", Value: fmt.Sprintf("%v", champion.Stats.MovementSpeed), Inline: true},
 			{Name: "Adaptive Type", Value: fmt.Sprintf("%v", champion.AdaptiveType), Inline: true},
-			{Name: "Resource", Value: resource, Inline: true},
+			{Name: "Resource", Value: champion.Resource, Inline: true},
 			{Name: "", Value: ""},
+			{Name: "Attack Type", Value: champion.AttackType, Inline: true},
 			{Name: "Patch last changed", Value: champion.PatchLastChanged, Inline: true},
 		},
-		Footer: &discordgo.MessageEmbedFooter{Text: strings.Join(tags, ", ")},
+		Footer: &discordgo.MessageEmbedFooter{Text: strings.Join(champion.Roles, ", ")},
 	}
 
 	return ChampionEmbeds{General: championEmbed}

@@ -13,7 +13,6 @@ This bot uses the Lolesports api, [League of Legends Wiki](https://leagueoflegen
 
 ## Todo
 
-- Script to normalize the data from lolstaticdata.
 - `item` command.
 - Disable button when pressed by a user.
 
@@ -21,7 +20,11 @@ This bot uses the Lolesports api, [League of Legends Wiki](https://leagueoflegen
 
 ### lolstaticdata
 
-This bot requires the data provided from [lolstaticdata](https://github.com/meraki-analytics/lolstaticdata).
+This bot requires the data provided from [lolstaticdata](https://github.com/meraki-analytics/lolstaticdata). For now, only champion data is needed, so just can `python lolstaticdata.champions`.
+
+After copying the champions data folder to the root of the project, a champion should have a path like `./champions/Aatrox.json`.
+
+Run `go run ./normalize`, this will create a folder with a path for a champion like `./champions/normalized/Aatrox.json`.
 
 ### Bot Settings
 
