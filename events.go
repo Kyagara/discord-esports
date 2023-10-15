@@ -15,7 +15,7 @@ var (
 func readyEvent(session *discordgo.Session, ready *discordgo.Ready) {
 	client.logger.Info(fmt.Sprintf("Logged in as: %v#%v", session.State.User.Username, session.State.User.Discriminator))
 
-	if *removeFlag || *registerFlag {
+	if *registerFlag {
 		return
 	}
 
@@ -31,7 +31,7 @@ func readyEvent(session *discordgo.Session, ready *discordgo.Ready) {
 }
 
 func interactionsEvent(session *discordgo.Session, interaction *discordgo.InteractionCreate) {
-	if *removeFlag || *registerFlag {
+	if *registerFlag {
 		return
 	}
 

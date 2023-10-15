@@ -15,7 +15,6 @@ const embedColor int = 0xff3838
 // Flags
 var (
 	registerFlag = flag.Bool("register", false, "Register commands to the guild specified in the config files.")
-	removeFlag   = flag.Bool("remove", false, "Remove commands to the guild specified in the config files.")
 )
 
 var (
@@ -46,10 +45,6 @@ var (
 func init() { flag.Parse() }
 
 func main() {
-	if *registerFlag && *removeFlag {
-		client.logger.Fatal("Use only one of these commands at a time.")
-	}
-
 	client, err := newClient()
 	if err != nil {
 		client.logger.Fatal(fmt.Sprintf("error creating client: %v", err))
@@ -117,14 +112,6 @@ func main() {
 		err := client.registerCommands()
 		if err != nil {
 			client.logger.Fatal(fmt.Sprintf("error registering commands: %v", err))
-		}
-		return
-	}
-
-	if *removeFlag {
-		err := client.removeCommands()
-		if err != nil {
-			client.logger.Fatal(fmt.Sprintf("error removing commands: %v", err))
 		}
 		return
 	}

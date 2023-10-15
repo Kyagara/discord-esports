@@ -238,19 +238,6 @@ func (c *Client) registerCommands() error {
 	return nil
 }
 
-func (c *Client) removeCommands() error {
-	c.logger.Info("Removing commands")
-
-	_, err := c.session.ApplicationCommandBulkOverwrite(c.session.State.User.ID, c.config.GuildID, make([]*discordgo.ApplicationCommand, 0))
-	if err != nil {
-		return fmt.Errorf("error removing guild commands: %v", err)
-	}
-
-	c.logger.Info("Removed guild commands.")
-
-	return nil
-}
-
 func (c *Client) mainLoop() {
 	post := time.NewTicker(time.Duration(c.config.PostDataTimer * int(time.Millisecond)))
 	defer post.Stop()

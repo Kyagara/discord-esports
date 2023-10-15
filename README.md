@@ -1,8 +1,6 @@
 ## discord-esports
 
-This bot periodically sends information about upcoming League of Legends and Valorant professional games, its ~~a carbon copy~~ inspired by the [BottyMcBotface](https://github.com/Querijn/BottyMcBotface) bot.
-
-This bot uses the Lolesports api, [League of Legends Wiki](https://leagueoflegends.fandom.com/wiki/League_of_Legends_Wiki), [vlrggapi](https://github.com/axsddlr/vlrggapi), [cdragon](https://github.com/CommunityDragon/) and ddragon.
+This bot periodically sends information about upcoming League of Legends and Valorant professional games, its ~~a carbon copy~~ inspired by the [BottyMcBotface](https://github.com/Querijn/BottyMcBotface) bot. It runs in a small Discord server, so it needs work to properly function in a big server.
 
 ## Slash Commands
 
@@ -14,13 +12,29 @@ This bot uses the Lolesports api, [League of Legends Wiki](https://leagueoflegen
 ## Todo
 
 - `item` command.
+- Cache requests to esports apis in a file to avoid requests when starting up unless its past the post time.
 - Disable button when pressed by a user.
+- A way to allow for only the esports functions to run, without the need to setup the wiki data.
+
+## What data does this bot provide and how?
+
+### Champions and spells (stats, modifiers and notes)
+
+Data from [DataDragon](https://developer.riotgames.com/docs/lol#data-dragon) provided by riot can be sometimes... interesting, take Miss Fortune for example, her ultimate, `Bullet Time`, has apparently a range of 25000, the same range as Ashe's ultimate, a global spell. [CommunityDragon](https://github.com/CommunityDragon/)'s alternative to the DataDragon champion endpoint provides more data, but runs into the same issue in the case of Miss Fortune's ultimate. This leaves the [League of Legends Wiki](https://leagueoflegends.fandom.com/wiki/League_of_Legends_Wiki) as a pretty good source of information.
+
+Using the [lolstaticdata](https://github.com/meraki-analytics/lolstaticdata) tool to gather data from the wiki and normalizing it for this bot's use case (numbers can be string since it will be thrown into Discord Embeds anyway) and the CommunityDragon's CDN to get links for some static data, we can get some pretty good information, nothing ground breaking or that "discards" a visit to the wiki (which is why we keep links to the wiki everywhere).
+
+This data of course comes with its own problems, since its being constantly updated by users, it can have errors, not be formatted properly causing issues when gathering the data and/or normalizing it, but most of the time, its very complete. And since its not an endpoint which can be cached and revalidate after some time, it has to be manually updated, there exists some ideas to allow for updating the data without downtime, but its out of scope for now.
+
+### Esports
+
+For League of Legends, this bot uses the unofficial [LolEsports](https://lolesports.com/) api ([documentation](https://vickz84259.github.io/lolesports-api-docs)), and the unofficial api for [VLR.gg](https://www.vlr.gg/), [vlrggapi](https://github.com/axsddlr/vlrggapi) for Valorant.
 
 ## Setup
 
 ### lolstaticdata
 
-This bot requires the data provided from [lolstaticdata](https://github.com/meraki-analytics/lolstaticdata). For now, only champion data is needed, so just can `python lolstaticdata.champions`.
+This bot requires the data provided from [lolstaticdata](https://github.com/meraki-analytics/lolstaticdata). For now, only champion data is needed, so you can just run `python lolstaticdata.champions`.
 
 After copying the champions data folder to the root of the project, a champion should have a path like `./champions/Aatrox.json`.
 
@@ -28,7 +42,7 @@ Run `go run ./normalize`, this will create a folder with a path for a champion l
 
 ### Bot Settings
 
-The bot needs the following permissions:
+The bot needs the ability of creating slash comamnds and the following permissions:
 
 - Send Messages
 - Embed Links
@@ -39,13 +53,17 @@ https://discord.com/api/oauth2/authorize?client_id=BOT_ID&permissions=18432&scop
 
 ### Config
 
-Edit the `config.json.example` and rename it to just `config.json`.
+Duplicate the `config.json.example` and rename the copy to just `config.json`.
 
-If mod_roles is empty, anyone will be able to use the `update` option from the `esports` commands.
+If mod_roles is empty, anyone will be able to use the `update` option from the `esports` commands, this command makes a request to an esports api, this can be abused.
 
 ### Running
 
-After building the bot with `go build .`, run the bot with the flag `-register`, this will register all commands to the guild specified in the config file, if you want to remove all commands use the `-remove` flag.
+After building the bot with `go build .`, you can run the bot with the flag `-register`, this will **overwrite all guild commands** to the specified guild in the config file.
+
+## Updating
+
+When a new League of Legends patch is out, just repeat the process of gathering and normalizing the data, please try to not constantly update the data, when a new champion is out for example, check if the wiki has enough information on it to justify gathering all data again.
 
 ## Disclaimer
 
