@@ -33,22 +33,6 @@ func hasPermissions(session *discordgo.Session, interaction *discordgo.Interacti
 	return false
 }
 
-func respondWithError(interaction *discordgo.Interaction, err error) {
-	client.logger.Error(fmt.Sprintf("Error executing command: %v", err))
-
-	err = client.session.InteractionRespond(interaction, &discordgo.InteractionResponse{
-		Type: discordgo.InteractionResponseChannelMessageWithSource,
-		Data: &discordgo.InteractionResponseData{
-			Content: "Error executing command.",
-			Flags:   discordgo.MessageFlagsEphemeral,
-		},
-	})
-
-	if err != nil {
-		client.logger.Error(fmt.Sprintf("Error responding with error: %v", err))
-	}
-}
-
 func respondWithEmbed(interaction *discordgo.Interaction, embed []*discordgo.MessageEmbed) {
 	err := client.session.InteractionRespond(interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,

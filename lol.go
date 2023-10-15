@@ -57,7 +57,6 @@ type LOLEsportsLeagueSchedule struct {
 }
 
 func updateLOLData() error {
-	client.logger.Info("Updating LOL data.")
 	lolSchedule = make(map[string][]LOLEsportsLeagueSchedule)
 	http := http.DefaultClient
 
@@ -213,8 +212,6 @@ func getLOLUrlByLeague(leagueName LOLEsportsLeagueSchedule) string {
 }
 
 func sendLOLEmbed() error {
-	client.logger.Info("Sending LOL data.")
-
 	_, err := client.session.ChannelMessageSendEmbed(client.config.LOLChannel, createLOLMessageEmbed())
 	if err != nil {
 		return err

@@ -40,7 +40,6 @@ type VALEsportsTournamentSchedule struct {
 }
 
 func updateVALData() error {
-	client.logger.Info("Updating VAL data.")
 	valSchedule = make(map[string][]VALEsportsTournamentSchedule)
 	http := http.DefaultClient
 
@@ -179,8 +178,6 @@ func createVALMessageEmbed() *discordgo.MessageEmbed {
 }
 
 func sendVALEmbed() error {
-	client.logger.Info("Sending VAL data.")
-
 	_, err := client.session.ChannelMessageSendEmbed(client.config.VALChannel, createVALMessageEmbed())
 	if err != nil {
 		return err

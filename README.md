@@ -14,7 +14,6 @@ This bot periodically sends information about upcoming League of Legends and Val
 - `item` command.
 - Cache requests to esports apis in a file to avoid requests when starting up unless its past the post time.
 - Disable button when pressed by a user.
-- A way to allow for only the esports functions to run, without the need to setup the wiki data.
 
 ## What data does this bot provide and how?
 

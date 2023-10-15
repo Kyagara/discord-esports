@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"log"
 	"os"
 	"time"
 )
@@ -50,55 +49,11 @@ func main() {
 		client.logger.Fatal(fmt.Sprintf("error creating client: %v", err))
 	}
 
-	files, err := os.ReadDir("./champions")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	championsNames = make(map[string]string)
-
-	for _, f := range files {
-		if f.IsDir() {
-			continue
-		}
-
-		file, err := os.ReadFile(fmt.Sprintf("./champions/normalized/%v", f.Name()))
+	if client.config.Commands.Champion || client.config.Commands.Spell {
+		err = loadWikiData()
 		if err != nil {
-			log.Fatal(err)
+			client.logger.Fatal(fmt.Sprintf("error loading wiki data: %v", err))
 		}
-
-		champion := models.Champion{}
-		err = json.Unmarshal(file, &champion)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		spellsInfo[champion.Key] = make([]SpellInfo, 0)
-		spellsEmbeds[champion.Key] = make(map[string][]SpellEmbeds)
-
-		for i, spell := range champion.Spells.Passive {
-			spellsInfo[champion.Key] = append(spellsInfo[champion.Key], createSpellInfo(&spell, "P", i))
-			spellsEmbeds[champion.Key]["P"] = append(spellsEmbeds[champion.Key]["P"], createChampionSpellEmbed(&champion, &spell, "P"))
-		}
-		for i, spell := range champion.Spells.Q {
-			spellsInfo[champion.Key] = append(spellsInfo[champion.Key], createSpellInfo(&spell, "Q", i))
-			spellsEmbeds[champion.Key]["Q"] = append(spellsEmbeds[champion.Key]["Q"], createChampionSpellEmbed(&champion, &spell, "Q"))
-		}
-		for i, spell := range champion.Spells.W {
-			spellsInfo[champion.Key] = append(spellsInfo[champion.Key], createSpellInfo(&spell, "W", i))
-			spellsEmbeds[champion.Key]["W"] = append(spellsEmbeds[champion.Key]["W"], createChampionSpellEmbed(&champion, &spell, "W"))
-		}
-		for i, spell := range champion.Spells.E {
-			spellsInfo[champion.Key] = append(spellsInfo[champion.Key], createSpellInfo(&spell, "E", i))
-			spellsEmbeds[champion.Key]["E"] = append(spellsEmbeds[champion.Key]["E"], createChampionSpellEmbed(&champion, &spell, "E"))
-		}
-		for i, spell := range champion.Spells.R {
-			spellsInfo[champion.Key] = append(spellsInfo[champion.Key], createSpellInfo(&spell, "R", i))
-			spellsEmbeds[champion.Key]["R"] = append(spellsEmbeds[champion.Key]["R"], createChampionSpellEmbed(&champion, &spell, "R"))
-		}
-
-		championsEmbeds[champion.Key] = createChampionEmbed(&champion)
-		championsNames[champion.Name] = champion.Key
 	}
 
 	err = client.connect()
@@ -117,4 +72,62 @@ func main() {
 	}
 
 	client.mainLoop()
+}
+
+func loadWikiData() error {
+	files, err := os.ReadDir("./champions")
+	if err != nil {
+		return fmt.Errorf("error reading './champions' dir: %v", err)
+	}
+
+	championsNames = make(map[string]string)
+	for _, f := range files {
+		if f.IsDir() {
+			continue
+		}
+
+		file, err := os.ReadFile(fmt.Sprintf("./champions/normalized/%v", f.Name()))
+		if err != nil {
+			return fmt.Errorf("error reading './champions/normalized/%v': %v", f.Name(), err)
+		}
+
+		champion := models.Champion{}
+		err = json.Unmarshal(file, &champion)
+		if err != nil {
+			return fmt.Errorf("error parsing json '%v': %v", f.Name(), err)
+		}
+
+		spellsInfo[champion.Key] = make([]SpellInfo, 0)
+		spellsEmbeds[champion.Key] = make(map[string][]SpellEmbeds)
+
+		for i, spell := range champion.Spells.Passive {
+			spellsInfo[champion.Key] = append(spellsInfo[champion.Key], createSpellInfo(&spell, "P", i))
+			spellsEmbeds[champion.Key]["P"] = append(spellsEmbeds[champion.Key]["P"], createChampionSpellEmbed(&champion, &spell, "P"))
+		}
+
+		for i, spell := range champion.Spells.Q {
+			spellsInfo[champion.Key] = append(spellsInfo[champion.Key], createSpellInfo(&spell, "Q", i))
+			spellsEmbeds[champion.Key]["Q"] = append(spellsEmbeds[champion.Key]["Q"], createChampionSpellEmbed(&champion, &spell, "Q"))
+		}
+
+		for i, spell := range champion.Spells.W {
+			spellsInfo[champion.Key] = append(spellsInfo[champion.Key], createSpellInfo(&spell, "W", i))
+			spellsEmbeds[champion.Key]["W"] = append(spellsEmbeds[champion.Key]["W"], createChampionSpellEmbed(&champion, &spell, "W"))
+		}
+
+		for i, spell := range champion.Spells.E {
+			spellsInfo[champion.Key] = append(spellsInfo[champion.Key], createSpellInfo(&spell, "E", i))
+			spellsEmbeds[champion.Key]["E"] = append(spellsEmbeds[champion.Key]["E"], createChampionSpellEmbed(&champion, &spell, "E"))
+		}
+
+		for i, spell := range champion.Spells.R {
+			spellsInfo[champion.Key] = append(spellsInfo[champion.Key], createSpellInfo(&spell, "R", i))
+			spellsEmbeds[champion.Key]["R"] = append(spellsEmbeds[champion.Key]["R"], createChampionSpellEmbed(&champion, &spell, "R"))
+		}
+
+		championsEmbeds[champion.Key] = createChampionEmbed(&champion)
+		championsNames[champion.Name] = champion.Key
+	}
+
+	return nil
 }

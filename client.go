@@ -136,6 +136,9 @@ func (c *Client) loadEnabledCommands() {
 					Type:                     discordgo.ApplicationCommandOptionBoolean,
 					Description:              "Force an update of the upcoming matches.",
 					DescriptionLocalizations: map[discordgo.Locale]string{discordgo.PortugueseBR: "Força uma atualização da lista de partidas."},
+					Choices: []*discordgo.ApplicationCommandOptionChoice{
+						{Name: "Yes", Value: true},
+					},
 				},
 			}}, Handler: EsportsCommand}
 	}

@@ -39,21 +39,27 @@ func interactionsEvent(session *discordgo.Session, interaction *discordgo.Intera
 		id := strings.Split(interaction.MessageComponentData().CustomID, "_")
 
 		if !contains(commandButtonsID, id[0]) {
-			respondWithError(interaction.Interaction, fmt.Errorf("message component id '%s' not found", id[0]))
+			msg := fmt.Sprintf("Message component id '%s' not found.", id[0])
+			client.logger.Error(msg)
+			respondWithMessage(interaction.Interaction, msg)
 			return
 		}
 
 		// id[1] = champion key
 		championSpells, ok := spellsEmbeds[id[1]]
 		if !ok {
-			respondWithError(interaction.Interaction, fmt.Errorf("champion key '%s' not found", id[1]))
+			msg := fmt.Sprintf("Champion key '%s' not found.", id[1])
+			client.logger.Error(msg)
+			respondWithMessage(interaction.Interaction, msg)
 			return
 		}
 
 		// id[2] = spell key
 		spells, ok := championSpells[id[2]]
 		if !ok {
-			respondWithError(interaction.Interaction, fmt.Errorf("spell key '%s' not found", id[2]))
+			msg := fmt.Sprintf("Spell key '%s' not found.", id[2])
+			client.logger.Error(msg)
+			respondWithMessage(interaction.Interaction, msg)
 			return
 		}
 
@@ -66,10 +72,8 @@ func interactionsEvent(session *discordgo.Session, interaction *discordgo.Intera
 		switch id[0] {
 		case "modifiers":
 			respondWithEmbed(interaction.Interaction, []*discordgo.MessageEmbed{&spells[spellIndex].Modifiers})
-
 		case "notes":
 			respondWithEmbed(interaction.Interaction, []*discordgo.MessageEmbed{&spells[spellIndex].Notes})
-
 		case "spell":
 			respondWithEmbed(interaction.Interaction, []*discordgo.MessageEmbed{&spells[spellIndex].General})
 		}
