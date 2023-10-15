@@ -13,7 +13,7 @@ This bot periodically sends information about upcoming League of Legends and Val
 
 - `item` command.
 - Cache requests to esports apis in a file to avoid requests when starting up unless its past the post time.
-- Disable button when pressed by a user.
+- Disable button when pressed by a user. (To avoid errors for now, buttons are disabled)
 
 ## What data does this bot provide and how?
 
