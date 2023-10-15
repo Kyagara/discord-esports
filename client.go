@@ -93,13 +93,22 @@ func newClient() (*Client, error) {
 		logger.Info("You have not set any mod_roles, anyone will be able to use the post and update commands, this can be abused.")
 	}
 
-	session, err := discordgo.New("Bot " + config.Token)
+	s, err := discordgo.New("Bot " + config.Token)
 	if err != nil {
 		return nil, fmt.Errorf("error creating Discord session: %v", err)
 	}
 
+	s.State.MaxMessageCount = 0
+	s.StateEnabled = false
+	s.State.TrackPresences = false
+	s.State.TrackRoles = false
+	s.State.TrackEmojis = false
+	s.State.TrackMembers = false
+	s.State.TrackVoice = false
+	s.State.TrackChannels = false
+
 	client := &Client{
-		session:  session,
+		session:  s,
 		config:   &config,
 		logger:   logger,
 		commands: map[string]Command{},
