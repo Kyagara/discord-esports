@@ -13,7 +13,7 @@ func InfoCommand(session *discordgo.Session, interaction *discordgo.InteractionC
 		cmds = append(cmds, c.Interaction.Name)
 	}
 
-	embed := &discordgo.MessageEmbed{Title: "Info", Color: embedColor, Fields: []*discordgo.MessageEmbedField{
+	embed := &discordgo.MessageEmbed{Title: "Info", Color: DISCORD_EMBED_COLOR, Fields: []*discordgo.MessageEmbedField{
 		{Name: "Last update", Value: fmt.Sprintf("<t:%v:R>.\nTimer: %v hours", lastUpdate.UnixMilli()/1000, client.config.UpdateDateTimer/1000/60/60), Inline: true},
 		{Name: "Last post", Value: fmt.Sprintf("<t:%v:R>.\nTimer: %v hours.", lastPost.UnixMilli()/1000, client.config.PostDataTimer/1000/60/60), Inline: true},
 		{Name: "Started", Value: fmt.Sprintf("<t:%v:R>", started.UnixMilli()/1000), Inline: true},

@@ -9,7 +9,18 @@ import (
 	"time"
 )
 
-const embedColor int = 0xff3838
+const (
+	CONFIG_FILE_PATH                 string = "./data/config.json"
+	CHAMPIONS_FOLDER_PATH            string = "./data/champions"
+	NORMALIZED_CHAMPIONS_FOLDER_PATH string = "./data/champions/normalized"
+	// NORMALIZED_ITEMS_FOLDER_PATH string = "./data/items/normalized"
+
+	// Experimental
+	// LOL_NEWS_FILE_PATH               string = "./data/lol_news.json"
+	// VAL_NEWS_FILE_PATH               string = "./data/val_news.json"
+
+	DISCORD_EMBED_COLOR int = 0xff3838
+)
 
 // Flags
 var (
@@ -75,9 +86,9 @@ func main() {
 }
 
 func loadWikiData() error {
-	files, err := os.ReadDir("./champions")
+	files, err := os.ReadDir(CHAMPIONS_FOLDER_PATH)
 	if err != nil {
-		return fmt.Errorf("error reading './champions' dir: %v", err)
+		return fmt.Errorf("error reading '%v' dir: %v", CHAMPIONS_FOLDER_PATH, err)
 	}
 
 	championsNames = make(map[string]string)
@@ -86,9 +97,9 @@ func loadWikiData() error {
 			continue
 		}
 
-		file, err := os.ReadFile(fmt.Sprintf("./champions/normalized/%v", f.Name()))
+		file, err := os.ReadFile(fmt.Sprintf("%v/%v", NORMALIZED_CHAMPIONS_FOLDER_PATH, f.Name()))
 		if err != nil {
-			return fmt.Errorf("error reading './champions/normalized/%v': %v", f.Name(), err)
+			return fmt.Errorf("error reading '%v/%v': %v", NORMALIZED_CHAMPIONS_FOLDER_PATH, f.Name(), err)
 		}
 
 		champion := models.Champion{}

@@ -47,7 +47,7 @@ func createChampionEmbed(champion *models.Champion) ChampionEmbeds {
 	championEmbed := discordgo.MessageEmbed{
 		Title: champion.FullTitle,
 		URL:   champion.OfficialPage,
-		Color: embedColor,
+		Color: DISCORD_EMBED_COLOR,
 		Thumbnail: &discordgo.MessageEmbedThumbnail{
 			URL: champion.Icon,
 		},

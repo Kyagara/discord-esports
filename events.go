@@ -18,16 +18,6 @@ func readyEvent(session *discordgo.Session, ready *discordgo.Ready) {
 	if *registerFlag {
 		return
 	}
-
-	err := updateAllData()
-	if err != nil {
-		client.logger.Error(fmt.Sprintf("Error updating data: %v", err))
-	}
-
-	err = postAllData()
-	if err != nil {
-		client.logger.Error(fmt.Sprintf("Error sending data: %v", err))
-	}
 }
 
 func interactionsEvent(session *discordgo.Session, interaction *discordgo.InteractionCreate) {

@@ -1,3 +1,4 @@
+// Structs shared between the main module and the normalize
 package models
 
 type Champion struct {

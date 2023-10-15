@@ -97,7 +97,7 @@ func createChampionSpellEmbed(champion *models.Champion, spell *models.ChampionS
 	spellEmbed := discordgo.MessageEmbed{
 		Title:       championAndSkillName,
 		URL:         spell.WikiPage,
-		Color:       embedColor,
+		Color:       DISCORD_EMBED_COLOR,
 		Description: description,
 		Thumbnail:   &discordgo.MessageEmbedThumbnail{URL: spell.Icon},
 		Fields: []*discordgo.MessageEmbedField{
@@ -153,7 +153,7 @@ func createChampionSpellEmbed(champion *models.Champion, spell *models.ChampionS
 	spellModifiersEmbed := discordgo.MessageEmbed{
 		Title:       championAndSkillName,
 		URL:         spell.WikiPage,
-		Color:       embedColor,
+		Color:       DISCORD_EMBED_COLOR,
 		Description: modifiersDesc,
 		Fields:      fields,
 	}
@@ -175,7 +175,7 @@ func createChampionSpellEmbed(champion *models.Champion, spell *models.ChampionS
 	spellNotesEmbed := discordgo.MessageEmbed{
 		Title:       championAndSkillName,
 		URL:         spell.WikiPage,
-		Color:       embedColor,
+		Color:       DISCORD_EMBED_COLOR,
 		Description: spellNotes,
 	}
 

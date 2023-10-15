@@ -4,7 +4,7 @@ This bot periodically sends information about upcoming League of Legends and Val
 
 ## Slash Commands
 
-- esports - Get a list of upcoming matches from a game. User needs one of the mod roles set in `config.json` to use the update option.
+- esports - Get a list of upcoming matches from a game. User needs one of the mod roles set in `./data/config.json` to use the update option.
 - info - Send information about the bot, includes link for this page, the last time data was updated and posted and all commands.
 - champion - Sends stats for a champion, includes links for a wiki page and LoLalytics page.
 - spell - Sends information about a spell, includes links for its wiki page, video, modifiers and notes.
@@ -33,11 +33,13 @@ For League of Legends, this bot uses the unofficial [LolEsports](https://lolespo
 
 ### lolstaticdata
 
-This bot requires the data provided from [lolstaticdata](https://github.com/meraki-analytics/lolstaticdata). For now, only champion data is needed, so you can just run `python lolstaticdata.champions`.
+> You can disable the spell and champion command in the config file and skip this step if you don't need this command.
 
-After copying the champions data folder to the root of the project, a champion should have a path like `./champions/Aatrox.json`.
+This bot requires the data provided from [lolstaticdata](https://github.com/meraki-analytics/lolstaticdata). For now, only champion data is needed, so you can just run `python -m lolstaticdata.champions`.
 
-Run `go run ./normalize`, this will create a folder with a path for a champion like `./champions/normalized/Aatrox.json`.
+After copying the champions data folder to the root of the project, a champion should have a path like `./data/champions/Aatrox.json`.
+
+Run `go run ./normalize`, this will create a folder with a path for a champion like `./data/champions/normalized/Aatrox.json`.
 
 ### Bot Settings
 
@@ -52,13 +54,15 @@ https://discord.com/api/oauth2/authorize?client_id=BOT_ID&permissions=18432&scop
 
 ### Config
 
-Duplicate the `config.json.example` and rename the copy to just `config.json`.
+Duplicate the `./data/config.json.example` and rename the copy to just `config.json`.
+
+You can disable any command, disabling the spell AND champion command will skip loading wiki data.
 
 If mod_roles is empty, anyone will be able to use the `update` option from the `esports` commands, this command makes a request to an esports api, this can be abused.
 
 ### Running
 
-After building the bot with `go build .`, you can run the bot with the flag `-register`, this will **overwrite all guild commands** to the specified guild in the config file.
+Now run the bot with the flag `-register` once, this will **overwrite all guild commands** to the specified guild in the config file, after that you can run the bot without specifying any flag.
 
 ## Updating
 

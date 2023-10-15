@@ -13,27 +13,32 @@ import (
 	"golang.org/x/text/language"
 )
 
+const (
+	CHAMPIONS_FOLDER_PATH            string = "./data/champions"
+	NORMALIZED_CHAMPIONS_FOLDER_PATH string = "./data/champions/normalized"
+)
+
 var (
 	wikiChampions = make(map[string]WikiChampion)
 	champions     = make(map[string]models.Champion)
 )
 
 func main() {
-	if _, err := os.Stat("./champions/normalized"); os.IsNotExist(err) {
-		if err := os.Mkdir("./champions/normalized", os.ModePerm); err != nil {
+	if _, err := os.Stat(NORMALIZED_CHAMPIONS_FOLDER_PATH); os.IsNotExist(err) {
+		if err := os.Mkdir(NORMALIZED_CHAMPIONS_FOLDER_PATH, os.ModePerm); err != nil {
 			log.Fatal(err)
 		}
 	} else {
-		err := os.RemoveAll("./champions/normalized")
+		err := os.RemoveAll(NORMALIZED_CHAMPIONS_FOLDER_PATH)
 		if err != nil {
 			log.Fatal(err)
 		}
-		if err := os.Mkdir("./champions/normalized", os.ModePerm); err != nil {
+		if err := os.Mkdir(NORMALIZED_CHAMPIONS_FOLDER_PATH, os.ModePerm); err != nil {
 			log.Fatal(err)
 		}
 	}
 
-	files, err := os.ReadDir("./champions")
+	files, err := os.ReadDir(CHAMPIONS_FOLDER_PATH)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -43,7 +48,7 @@ func main() {
 			continue
 		}
 
-		file, err := os.ReadFile(fmt.Sprintf("./champions/%v", f.Name()))
+		file, err := os.ReadFile(fmt.Sprintf("%v/%v", CHAMPIONS_FOLDER_PATH, f.Name()))
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -84,7 +89,7 @@ func main() {
 			log.Fatal(err)
 		}
 
-		err = os.WriteFile(fmt.Sprintf("./champions/normalized/%v.json", champion.Key), file, 0644)
+		err = os.WriteFile(fmt.Sprintf("%v/%v.json", NORMALIZED_CHAMPIONS_FOLDER_PATH, champion.Key), file, 0644)
 		if err != nil {
 			log.Fatal(err)
 		}

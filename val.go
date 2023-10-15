@@ -169,12 +169,12 @@ func createVALMessageEmbed() *discordgo.MessageEmbed {
 
 	if len(fields) == 0 {
 		client.logger.Info("No VAL games found.")
-		return &discordgo.MessageEmbed{Title: fmt.Sprintf("Valorant games on %v", tomorrow.Format("2006/01/02")), Color: embedColor, Description: "No games found :/"}
+		return &discordgo.MessageEmbed{Title: fmt.Sprintf("Valorant games on %v", tomorrow.Format("2006/01/02")), Color: DISCORD_EMBED_COLOR, Description: "No games found :/"}
 	}
 
 	fields = append(fields, &discordgo.MessageEmbedField{Name: "Upcoming matches", Value: "[Check all upcoming matches here](https://www.vlr.gg/matches)"})
 
-	return &discordgo.MessageEmbed{Title: fmt.Sprintf("Valorant games on %v", tomorrow.Format("2006/01/02")), Color: embedColor, Fields: fields}
+	return &discordgo.MessageEmbed{Title: fmt.Sprintf("Valorant games on %v", tomorrow.Format("2006/01/02")), Color: DISCORD_EMBED_COLOR, Fields: fields}
 }
 
 func sendVALEmbed() error {

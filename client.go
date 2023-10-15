@@ -40,7 +40,7 @@ type Configuration struct {
 }
 
 func (config *Configuration) loadConfig() error {
-	bytes, err := os.ReadFile("./config.json")
+	bytes, err := os.ReadFile(CONFIG_FILE_PATH)
 	if err != nil {
 		return fmt.Errorf("error reading config file: %v", err)
 	}
@@ -70,7 +70,7 @@ func (config *Configuration) loadConfig() error {
 		return fmt.Errorf("update_data_timer is set too low")
 	}
 
-	if config.PostDataTimer < 1800000 {
+	if config.PostDataTimer < 3600000 {
 		return fmt.Errorf("post_data_timer is set too low")
 	}
 
