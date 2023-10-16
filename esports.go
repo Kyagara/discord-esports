@@ -27,12 +27,17 @@ func EsportsCommand(session *discordgo.Session, interaction *discordgo.Interacti
 			now = time.Now()
 			tomorrow = time.Date(now.Year(), now.Month(), now.Day()+1, 0, 0, 0, 0, now.Location())
 
+			if time.Since(esports.LastUpdateTimestamp) < time.Duration(15*time.Minute) {
+				respondWithMessage(interaction.Interaction, "Data was updated recently, wait 15 minutes.")
+				return
+			}
+
 			var err error
 			switch game {
 			case "lol":
-				err = updateLOLData()
+				err = updateLOLEsportsData()
 			case "val":
-				err = updateVALData()
+				err = updateVALEsportsData()
 			default:
 				respondWithMessage(interaction.Interaction, "Game not found.")
 				return

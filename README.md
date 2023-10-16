@@ -12,8 +12,9 @@ This bot periodically sends information about upcoming League of Legends and Val
 ## Todo
 
 - `item` command.
-- Cache requests to esports apis in a file to avoid requests when starting up unless its past the post time.
+- Cache requests to esports apis in a file to avoid requests when starting up unless its past the post time. (Partially complete)
 - Disable button when pressed by a user. (To avoid errors for now, buttons are disabled)
+- Fix edge cases with user input, for example giving a invalid champion/spell or not giving one at all
 
 ## What data does this bot provide and how?
 

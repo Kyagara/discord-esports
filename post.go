@@ -5,17 +5,16 @@ import (
 	"time"
 )
 
-func postAllData() error {
-	err := sendLOLEmbed()
+func postEsportsData() {
+	err := postLOLEsportsEmbed()
 	if err != nil {
-		return fmt.Errorf("error sending LOL embed: %v", err)
+		client.logger.Error(fmt.Sprintf("error sending LOL embed: %v", err))
 	}
 
-	err = sendVALEmbed()
+	err = postVALEsportsEmbed()
 	if err != nil {
-		return fmt.Errorf("error sending VAL embed: %v", err)
+		client.logger.Error(fmt.Sprintf("error sending VAL embed: %v", err))
 	}
 
-	lastPost = time.Now()
-	return nil
+	esports.LastPostTimestamp = time.Now()
 }

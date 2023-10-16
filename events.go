@@ -8,12 +8,8 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-var (
-	commandButtonsID []string = []string{"modifiers", "notes", "spell"}
-)
-
 func readyEvent(session *discordgo.Session, ready *discordgo.Ready) {
-	client.logger.Info(fmt.Sprintf("Logged in as: %v#%v", session.State.User.Username, session.State.User.Discriminator))
+	client.logger.Info(fmt.Sprintf("Logged in as: %v", session.State.User.Username))
 
 	if *registerFlag {
 		return

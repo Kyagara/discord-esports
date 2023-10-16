@@ -39,8 +39,7 @@ type VALEsportsTournamentSchedule struct {
 	TeamB      string
 }
 
-func updateVALData() error {
-	valSchedule = make(map[string][]VALEsportsTournamentSchedule)
+func updateVALEsportsData() error {
 	http := http.DefaultClient
 
 	req, err := newRequest("https://vlrggapi.vercel.app/match/upcoming_index")
@@ -70,7 +69,12 @@ func updateVALData() error {
 			RoundInfo:  segment.RoundInfo,
 			Time:       segment.UnixTimestamp,
 			TeamA:      segment.Team1,
+			URL:        segment.MatchPage,
 			TeamB:      segment.Team2,
+		}
+
+		if gameData.TeamA == "TBD" && gameData.TeamB == "TBD" {
+			continue
 		}
 
 		i, err := strconv.ParseInt(fmt.Sprintf("%v", gameData.Time), 10, 64)
@@ -120,23 +124,28 @@ func updateVALData() error {
 					continue
 				}
 
-				if valSchedule[tournament] == nil {
-					valSchedule[tournament] = make([]VALEsportsTournamentSchedule, 0)
+				if esports.VALSchedule == nil {
+					esports.VALSchedule = make(map[string][]VALEsportsTournamentSchedule)
 				}
 
-				valSchedule[tournament] = append(valSchedule[tournament], item)
+				if esports.VALSchedule[tournament] == nil {
+					esports.VALSchedule[tournament] = make([]VALEsportsTournamentSchedule, 0)
+				}
+
+				esports.VALSchedule[tournament] = append(esports.VALSchedule[tournament], item)
 			}
 		}
 	}
 
-	client.logger.Info("Updated VAL data.")
+	saveEsportsFile()
+	client.logger.Info("Updated VAL esports data.")
 	return nil
 }
 
 func createVALMessageEmbed() *discordgo.MessageEmbed {
 	var fields []*discordgo.MessageEmbedField
 
-	for tournament, games := range valSchedule {
+	for tournament, games := range esports.VALSchedule {
 		output := ""
 
 		if len(games) == 0 {
@@ -177,7 +186,7 @@ func createVALMessageEmbed() *discordgo.MessageEmbed {
 	return &discordgo.MessageEmbed{Title: fmt.Sprintf("Valorant games on %v", tomorrow.Format("2006/01/02")), Color: DISCORD_EMBED_COLOR, Fields: fields}
 }
 
-func sendVALEmbed() error {
+func postVALEsportsEmbed() error {
 	_, err := client.session.ChannelMessageSendEmbed(client.config.VALChannel, createVALMessageEmbed())
 	if err != nil {
 		return err

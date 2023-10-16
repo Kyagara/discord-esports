@@ -56,8 +56,7 @@ type LOLEsportsLeagueSchedule struct {
 	TeamB  string
 }
 
-func updateLOLData() error {
-	lolSchedule = make(map[string][]LOLEsportsLeagueSchedule)
+func updateLOLEsportsData() error {
 	http := http.DefaultClient
 
 	req, err := newRequest("https://esports-api.lolesports.com/persisted/gw/getLeagues?hl=en-US")
@@ -153,23 +152,28 @@ func updateLOLData() error {
 					continue
 				}
 
-				if lolSchedule[league] == nil {
-					lolSchedule[league] = make([]LOLEsportsLeagueSchedule, 0)
+				if esports.LOLSchedule == nil {
+					esports.LOLSchedule = make(map[string][]LOLEsportsLeagueSchedule)
 				}
 
-				lolSchedule[league] = append(lolSchedule[league], item)
+				if esports.LOLSchedule[league] == nil {
+					esports.LOLSchedule[league] = make([]LOLEsportsLeagueSchedule, 0)
+				}
+
+				esports.LOLSchedule[league] = append(esports.LOLSchedule[league], item)
 			}
 		}
 	}
 
-	client.logger.Info("Updated LOL data.")
+	saveEsportsFile()
+	client.logger.Info("Updated LOL esports data.")
 	return nil
 }
 
 func createLOLMessageEmbed() *discordgo.MessageEmbed {
 	var fields []*discordgo.MessageEmbedField
 
-	for league, games := range lolSchedule {
+	for league, games := range esports.LOLSchedule {
 		output := ""
 
 		if len(games) == 0 {
@@ -211,7 +215,7 @@ func getLOLUrlByLeague(leagueName LOLEsportsLeagueSchedule) string {
 	return "https://lolesports.com/schedule?leagues=" + leagueName.URL
 }
 
-func sendLOLEmbed() error {
+func postLOLEsportsEmbed() error {
 	_, err := client.session.ChannelMessageSendEmbed(client.config.LOLChannel, createLOLMessageEmbed())
 	if err != nil {
 		return err

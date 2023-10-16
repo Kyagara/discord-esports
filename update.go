@@ -5,20 +5,20 @@ import (
 	"time"
 )
 
-func updateAllData() error {
+func updateEsportsData() {
 	now = time.Now()
 	tomorrow = time.Date(now.Year(), now.Month(), now.Day()+1, 0, 0, 0, 0, now.Location())
 
-	err := updateLOLData()
+	err := updateLOLEsportsData()
 	if err != nil {
-		return fmt.Errorf("error updating LOL data: %v", err)
+		client.logger.Error(fmt.Sprintf("error updating LOL data: %v", err))
 	}
 
-	err = updateVALData()
+	err = updateVALEsportsData()
 	if err != nil {
-		return fmt.Errorf("error updating VAL data: %v", err)
+		client.logger.Error(fmt.Sprintf("error updating VAL data: %v", err))
 	}
 
-	lastUpdate = time.Now()
-	return nil
+	esports.LastUpdateTimestamp = time.Now()
+	saveEsportsFile()
 }
