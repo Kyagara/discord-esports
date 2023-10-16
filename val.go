@@ -177,7 +177,6 @@ func createVALMessageEmbed() *discordgo.MessageEmbed {
 	}
 
 	if len(fields) == 0 {
-		client.logger.Info("No VAL games found.")
 		return &discordgo.MessageEmbed{Title: fmt.Sprintf("Valorant games on %v", tomorrow.Format("2006/01/02")), Color: DISCORD_EMBED_COLOR, Description: "No games found :/"}
 	}
 

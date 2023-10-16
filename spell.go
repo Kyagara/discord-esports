@@ -29,47 +29,72 @@ func SpellCommand(session *discordgo.Session, interaction *discordgo.Interaction
 	}
 
 	if interaction.Type == discordgo.InteractionApplicationCommandAutocomplete {
-		champion, ok := optionMap["champion"]
-		if ok && champion.Focused {
-			autoCompleteChampionName(session, interaction, champion.StringValue())
-			return
+		if champion, ok := optionMap["champion"]; ok {
+			if champion.Focused {
+				autoCompleteChampionName(session, interaction, champion.StringValue())
+				return
+			}
 		}
 
-		spell, ok := optionMap["spell"]
-		if ok && spell.Focused {
-			autoCompleteSpell(session, interaction, optionMap["champion"].StringValue())
+		if spell, ok := optionMap["spell"]; ok {
+			if spell.Focused {
+				autoCompleteSpell(session, interaction, optionMap["champion"].StringValue())
+			}
 		}
 
 		return
 	}
 
 	championKey := optionMap["champion"].StringValue()
+	if _, ok := championsNames[championKey]; !ok {
+		respondWithMessage(interaction.Interaction, fmt.Sprintf("Champion '%v' not found.", championKey))
+		return
+	}
 
 	spell := strings.Split(optionMap["spell"].StringValue(), ",")
+
+	if len(spell) != 2 {
+		respondWithMessage(interaction.Interaction, "Spell not provided.")
+		return
+	}
+
+	spellEmbeds, ok := spellsEmbeds[championKey][spell[0]]
+	if !ok {
+		respondWithMessage(interaction.Interaction, fmt.Sprintf("Spell '%v' not found.", optionMap["spell"].StringValue()))
+		return
+	}
+
 	spellIndex, err := strconv.Atoi(spell[1])
 	if err != nil {
 		client.logger.Error(fmt.Sprintf("error converting spell index to int: %v", err))
 	}
 
-	var embed *discordgo.MessageEmbed
+	if spellIndex < 0 || spellIndex > len(spellEmbeds)-1 {
+		respondWithMessage(interaction.Interaction, fmt.Sprintf("Spell '%v' not found.", optionMap["spell"].StringValue()))
+		return
+	}
+
 	components := []discordgo.MessageComponent{discordgo.ActionsRow{Components: []discordgo.MessageComponent{
 		discordgo.Button{Label: "Modifiers", CustomID: fmt.Sprintf("modifiers_%v_%v_%v", championKey, spell[0], spellIndex), Disabled: true},
 		discordgo.Button{Label: "Notes", CustomID: fmt.Sprintf("notes_%v_%v_%v", championKey, spell[0], spellIndex), Disabled: true},
 	}}}
 
+	var embed *discordgo.MessageEmbed
+	spellEmbed := spellEmbeds[spellIndex]
+
 	embedType, ok := optionMap["type"]
 	if !ok || embedType.StringValue() == "" {
-		embed = &spellsEmbeds[championKey][spell[0]][spellIndex].General
+		embed = &spellEmbed.General
 	} else {
 		switch embedType.StringValue() {
 		case "modifiers":
-			embed = &spellsEmbeds[championKey][spell[0]][spellIndex].Modifiers
+			embed = &spellEmbed.Modifiers
 			components = []discordgo.MessageComponent{}
 		case "notes":
-			embed = &spellsEmbeds[championKey][spell[0]][spellIndex].Notes
+			embed = &spellEmbed.Notes
 			components = []discordgo.MessageComponent{}
 		default:
-			embed = &spellsEmbeds[championKey][spell[0]][spellIndex].General
+			embed = &spellEmbed.General
 		}
 	}
 

@@ -1,6 +1,6 @@
 ## discord-esports
 
-This bot periodically sends information about upcoming League of Legends and Valorant professional games, its ~~a carbon copy~~ inspired by the [BottyMcBotface](https://github.com/Querijn/BottyMcBotface) bot. It runs in a small Discord server, so it needs work to properly function in a big server.
+This bot periodically sends information about upcoming League of Legends and Valorant professional games, its ~~a carbon copy~~ inspired by the [BottyMcBotface](https://github.com/Querijn/BottyMcBotface) bot. It runs in a small Discord server, so I am sure it needs work to properly function in a big server.
 
 ## Slash Commands
 
@@ -11,10 +11,12 @@ This bot periodically sends information about upcoming League of Legends and Val
 
 ## Todo
 
-- `item` command.
+- A notifier for new game patches for lol/val/tft.
+- `news` command for latest val/lol esports news.
+- `recent` command for latest val/lol esports games results.
+- `item` command for lol items.
 - Cache requests to esports apis in a file to avoid requests when starting up unless its past the post time. (Partially complete)
-- Disable button when pressed by a user. (To avoid errors for now, buttons are disabled)
-- Fix edge cases with user input, for example giving a invalid champion/spell or not giving one at all
+- Disable button when pressed by a user. (To avoid errors for now, buttons are sent but they are disabled)
 
 ## What data does this bot provide and how?
 
@@ -35,6 +37,8 @@ For League of Legends, this bot uses the unofficial [LolEsports](https://lolespo
 ### lolstaticdata
 
 > You can disable the spell and champion command in the config file and skip this step if you don't need this command.
+
+> Since skins data is not used, you can comment out functions like `__get_skins` to avoid requesting skin data.
 
 This bot requires the data provided from [lolstaticdata](https://github.com/meraki-analytics/lolstaticdata). For now, only champion data is needed, so you can just run `python -m lolstaticdata.champions`.
 

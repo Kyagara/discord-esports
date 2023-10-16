@@ -20,27 +20,32 @@ func ChampionCommand(session *discordgo.Session, interaction *discordgo.Interact
 	}
 
 	if interaction.Type == discordgo.InteractionApplicationCommandAutocomplete {
-		champion, ok := optionMap["champion"]
-		if ok && champion.Focused {
-			autoCompleteChampionName(session, interaction, champion.StringValue())
+		if champion, ok := optionMap["champion"]; ok {
+			if champion.Focused {
+				autoCompleteChampionName(session, interaction, champion.StringValue())
+			}
 		}
 
 		return
 	}
 
 	championKey := optionMap["champion"].StringValue()
-	champion := championsEmbeds[championKey]
+	if champion, ok := championsEmbeds[championKey]; ok {
+		err := client.session.InteractionRespond(interaction.Interaction, &discordgo.InteractionResponse{
+			Type: discordgo.InteractionResponseChannelMessageWithSource,
+			Data: &discordgo.InteractionResponseData{
+				Embeds: []*discordgo.MessageEmbed{&champion.General},
+			},
+		})
 
-	err := client.session.InteractionRespond(interaction.Interaction, &discordgo.InteractionResponse{
-		Type: discordgo.InteractionResponseChannelMessageWithSource,
-		Data: &discordgo.InteractionResponseData{
-			Embeds: []*discordgo.MessageEmbed{&champion.General},
-		},
-	})
+		if err != nil {
+			client.logger.Error(fmt.Sprintf("Error responding with embed: %v", err))
+		}
 
-	if err != nil {
-		client.logger.Error(fmt.Sprintf("Error responding with embed: %v", err))
+		return
 	}
+
+	respondWithMessage(interaction.Interaction, fmt.Sprintf("Champion '%v' not found.", championKey))
 }
 
 func createChampionEmbed(champion *models.Champion) ChampionEmbeds {

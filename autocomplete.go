@@ -19,7 +19,7 @@ func autoCompleteChampionName(session *discordgo.Session, interaction *discordgo
 		}
 	}
 
-	var choices []*discordgo.ApplicationCommandOptionChoice
+	choices := []*discordgo.ApplicationCommandOptionChoice{}
 	for id, name := range filteredNames {
 		choices = append(choices, &discordgo.ApplicationCommandOptionChoice{Name: name, Value: id})
 	}
@@ -39,7 +39,7 @@ func autoCompleteChampionName(session *discordgo.Session, interaction *discordgo
 func autoCompleteSpell(session *discordgo.Session, interaction *discordgo.InteractionCreate, championName string) {
 	spells := spellsInfo[championName]
 
-	var choices []*discordgo.ApplicationCommandOptionChoice
+	choices := []*discordgo.ApplicationCommandOptionChoice{}
 	for _, spell := range spells {
 		choices = append(choices, &discordgo.ApplicationCommandOptionChoice{Name: spell.FullName, Value: fmt.Sprintf("%v,%v", spell.Key, spell.Index)})
 	}
