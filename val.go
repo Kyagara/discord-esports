@@ -41,7 +41,6 @@ type VALEsportsTournamentSchedule struct {
 
 func updateVALEsportsData() error {
 	http := http.DefaultClient
-
 	req, err := newRequest("https://vlrggapi.vercel.app/match/upcoming_index")
 	if err != nil {
 		return err
@@ -55,7 +54,6 @@ func updateVALEsportsData() error {
 	defer res.Body.Close()
 
 	var upcoming VLRGGUpcomingResponse
-
 	err = json.NewDecoder(res.Body).Decode(&upcoming)
 	if err != nil {
 		return err
@@ -77,13 +75,7 @@ func updateVALEsportsData() error {
 			continue
 		}
 
-		i, err := strconv.ParseInt(fmt.Sprintf("%v", gameData.Time), 10, 64)
-		if err != nil {
-			client.logger.Error(fmt.Sprintf("Error parsing unix date: %v", err))
-			continue
-		}
-
-		date := time.Unix(i, 0)
+		date := time.Unix(int64(gameData.Time), 0)
 		realDate := fmt.Sprintf("%v %v %v", date.Year(), int(date.Month()), date.Day())
 
 		if schedule[realDate] == nil {
@@ -99,6 +91,8 @@ func updateVALEsportsData() error {
 		schedule[realDate][tournament] = append(schedule[realDate][tournament], gameData)
 	}
 
+	tempSchedule := make(map[string][]VALEsportsTournamentSchedule, 0)
+
 	for dateKey, entries := range schedule {
 		parsedTime, err := time.Parse("2006 1 2", dateKey)
 		if err != nil {
@@ -112,32 +106,21 @@ func updateVALEsportsData() error {
 
 		for tournament, entryList := range entries {
 			for _, item := range entryList {
-				i, err := strconv.ParseInt(fmt.Sprintf("%v", item.Time), 10, 64)
-				if err != nil {
-					client.logger.Error(fmt.Sprintf("Error parsing entry time: %v", err))
-					continue
-				}
-
-				parsedTime := time.Unix(i, 0)
-
+				parsedTime := time.Unix(int64(item.Time), 0)
 				if parsedTime.Before(now) {
 					continue
 				}
 
-				if esports.VALSchedule == nil {
-					esports.VALSchedule = make(map[string][]VALEsportsTournamentSchedule)
+				if tempSchedule[tournament] == nil {
+					tempSchedule[tournament] = make([]VALEsportsTournamentSchedule, 0)
 				}
 
-				if esports.VALSchedule[tournament] == nil {
-					esports.VALSchedule[tournament] = make([]VALEsportsTournamentSchedule, 0)
-				}
-
-				esports.VALSchedule[tournament] = append(esports.VALSchedule[tournament], item)
+				tempSchedule[tournament] = append(tempSchedule[tournament], item)
 			}
 		}
 	}
 
-	saveEsportsFile()
+	esports.VALSchedule = tempSchedule
 	client.logger.Info("Updated VAL esports data.")
 	return nil
 }

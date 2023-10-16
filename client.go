@@ -191,7 +191,6 @@ func (c *Client) registerCommands() error {
 	}
 
 	c.logger.Info(fmt.Sprintf("Registered %v guild commands.", len(cmds)))
-
 	return nil
 }
 
@@ -208,59 +207,105 @@ func (c *Client) mainLoop() {
 	var post *time.Ticker
 	var update *time.Ticker
 
+	// Booleans to avoid a race condition with tickers as both of them immediately start
 	firstUpdate := true
-	firstSend := true
+	firstPost := true
+
+	resumeUpdate := false
+	resumePost := false
 
 	// If first start up
 	if esports.LastPostTimestamp.IsZero() || esports.LastUpdateTimestamp.IsZero() {
 		updateEsportsData()
 		postEsportsData()
 
-		post = time.NewTicker(time.Duration(c.config.PostDataTimer * int(time.Millisecond)))
-		defer post.Stop()
-
-		update = time.NewTicker(time.Duration(c.config.UpdateDateTimer * int(time.Millisecond)))
-		defer update.Stop()
+		update = getTimer(c.config.UpdateDateTimer)
+		post = getTimer(c.config.PostDataTimer)
 	} else {
-		needToUpdate := started.After(esports.LastUpdateTimestamp.Add(time.Duration(c.config.UpdateDateTimer * int(time.Millisecond))))
-		if needToUpdate {
+		nextUpdateTime := esports.LastUpdateTimestamp.Add(time.Duration(c.config.UpdateDateTimer * int(time.Millisecond)))
+		pastTime, leftForNextUpdate := isPastTime(nextUpdateTime, c.config.UpdateDateTimer)
+
+		if pastTime {
+			client.logger.Info("Past time to update, updating now.")
 			updateEsportsData()
+			update = getTimer(c.config.UpdateDateTimer)
+		} else {
+			client.logger.Info(fmt.Sprintf("Time to update still valid, waiting for next update in %v.", leftForNextUpdate.String()))
+			update = time.NewTicker(leftForNextUpdate)
+			resumeUpdate = true
 		}
 
-		update = time.NewTicker(time.Duration(c.config.UpdateDateTimer * int(time.Millisecond)))
-		defer update.Stop()
+		nextPostTime := esports.LastPostTimestamp.Add(time.Duration(c.config.PostDataTimer * int(time.Millisecond)))
+		pastTime, leftForNextPost := isPastTime(nextPostTime, c.config.PostDataTimer)
 
-		needToPost := started.After(esports.LastPostTimestamp.Add(time.Duration(c.config.PostDataTimer * int(time.Millisecond))))
-		if needToPost {
+		if pastTime {
+			client.logger.Info("Past time to post, posting now.")
 			postEsportsData()
+			post = getTimer(c.config.PostDataTimer)
+		} else {
+			client.logger.Info(fmt.Sprintf("Time to post still valid, waiting for next post in %v.", leftForNextPost.String()))
+			post = time.NewTicker(leftForNextPost)
+			resumePost = true
 		}
-
-		post = time.NewTicker(time.Duration(c.config.PostDataTimer * int(time.Millisecond)))
-		defer post.Stop()
 	}
 
-loop:
+	defer update.Stop()
+	defer post.Stop()
+
 	for {
 		select {
 		case <-stop:
 			c.logger.Info("Shutting down.")
-			break loop
+			saveEsportsFile()
+			return
+
 		case <-update.C:
+			if resumeUpdate {
+				updateEsportsData()
+				client.logger.Info("Resetting the Update ticker to specified duration.")
+				update.Reset(time.Duration(c.config.UpdateDateTimer * int(time.Millisecond)))
+				resumeUpdate = false
+				firstUpdate = false
+				continue
+			}
+
 			if !firstUpdate {
 				updateEsportsData()
+				firstUpdate = false
 			}
-
-			firstUpdate = false
 
 		case <-post.C:
-			if !firstSend {
+			if resumePost {
 				postEsportsData()
+				client.logger.Info("Resetting the Post ticker to specified duration.")
+				post.Reset(time.Duration(c.config.PostDataTimer * int(time.Millisecond)))
+				resumePost = false
+				firstPost = false
+				continue
 			}
 
-			firstSend = false
+			if !firstPost {
+				postEsportsData()
+				firstPost = false
+			}
 		}
 	}
+}
 
-	client.logger.Info("Saving esports data file.")
-	saveEsportsFile()
+func getTimer(duration int) *time.Ticker {
+	return time.NewTicker(time.Duration(duration * int(time.Millisecond)))
+}
+
+func isPastTime(nextTime time.Time, timerConfiguration int) (bool, time.Duration) {
+	timeLeftForNextTick := nextTime.Sub(started)
+
+	// If time left for the next update/post is negative,
+	// its way past the time to update/post
+	if timeLeftForNextTick < 0 {
+		return true, 0
+	}
+
+	// Return the time left for the next tick
+	timerDuration := time.Duration(timerConfiguration * int(time.Millisecond))
+	return timeLeftForNextTick > timerDuration, timeLeftForNextTick
 }

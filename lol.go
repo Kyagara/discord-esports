@@ -63,6 +63,7 @@ func updateLOLEsportsData() error {
 	if err != nil {
 		return err
 	}
+
 	req.Header.Add("x-api-key", "0TvQnueqKa5mxJntVWt0w4LpLfEkrV1Ta8rQBb9Z")
 
 	res, err := http.Do(req)
@@ -73,14 +74,12 @@ func updateLOLEsportsData() error {
 	defer res.Body.Close()
 
 	var leagueList LOLEsportsLeagueResponse
-
 	err = json.NewDecoder(res.Body).Decode(&leagueList)
 	if err != nil {
 		return err
 	}
 
 	var leagueIds []string
-
 	for _, league := range leagueList.Data.Leagues {
 		leagueIds = append(leagueIds, league.ID)
 	}
@@ -98,7 +97,6 @@ func updateLOLEsportsData() error {
 	}
 
 	var events LOLEsportsEventListResponse
-
 	err = json.NewDecoder(res.Body).Decode(&events)
 	if err != nil {
 		return err
@@ -129,6 +127,8 @@ func updateLOLEsportsData() error {
 		schedule[realDate][event.League.Name] = append(schedule[realDate][event.League.Name], gameData)
 	}
 
+	tempSchedule := make(map[string][]LOLEsportsLeagueSchedule, 0)
+
 	for dateKey, entries := range schedule {
 		parsedTime, err := time.Parse("2006 01 02", dateKey)
 		if err != nil {
@@ -152,20 +152,16 @@ func updateLOLEsportsData() error {
 					continue
 				}
 
-				if esports.LOLSchedule == nil {
-					esports.LOLSchedule = make(map[string][]LOLEsportsLeagueSchedule)
+				if tempSchedule[league] == nil {
+					tempSchedule[league] = make([]LOLEsportsLeagueSchedule, 0)
 				}
 
-				if esports.LOLSchedule[league] == nil {
-					esports.LOLSchedule[league] = make([]LOLEsportsLeagueSchedule, 0)
-				}
-
-				esports.LOLSchedule[league] = append(esports.LOLSchedule[league], item)
+				tempSchedule[league] = append(tempSchedule[league], item)
 			}
 		}
 	}
 
-	saveEsportsFile()
+	esports.LOLSchedule = tempSchedule
 	client.logger.Info("Updated LOL esports data.")
 	return nil
 }

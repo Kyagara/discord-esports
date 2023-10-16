@@ -8,6 +8,11 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
+var (
+	esportsUpdateLOLCommand = time.Now()
+	esportsUpdateVALCommand = time.Now()
+)
+
 func EsportsCommand(session *discordgo.Session, interaction *discordgo.InteractionCreate) {
 	options := interaction.ApplicationCommandData().Options
 	optionMap := make(map[string]*discordgo.ApplicationCommandInteractionDataOption, len(options))
@@ -27,16 +32,19 @@ func EsportsCommand(session *discordgo.Session, interaction *discordgo.Interacti
 			now = time.Now()
 			tomorrow = time.Date(now.Year(), now.Month(), now.Day()+1, 0, 0, 0, 0, now.Location())
 
-			if time.Since(esports.LastUpdateTimestamp) < time.Duration(15*time.Minute) {
-				respondWithMessage(interaction.Interaction, "Data was updated recently, wait 15 minutes.")
-				return
-			}
-
 			var err error
 			switch game {
 			case "lol":
+				if time.Since(esportsUpdateLOLCommand) < time.Duration(5*time.Minute) {
+					respondWithMessage(interaction.Interaction, "Upcoming LOL games was updated recently, wait 5 minutes.")
+					return
+				}
 				err = updateLOLEsportsData()
 			case "val":
+				if time.Since(esportsUpdateVALCommand) < time.Duration(5*time.Minute) {
+					respondWithMessage(interaction.Interaction, "Upcoming VAL games was updated recently, wait 5 minutes.")
+					return
+				}
 				err = updateVALEsportsData()
 			default:
 				respondWithMessage(interaction.Interaction, "Game not found.")
@@ -49,6 +57,7 @@ func EsportsCommand(session *discordgo.Session, interaction *discordgo.Interacti
 				return
 			}
 
+			saveEsportsFile()
 			respondWithMessage(interaction.Interaction, "Updated data without any errors.")
 			return
 		}

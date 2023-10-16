@@ -47,6 +47,7 @@ func loadFile(filePath string, target interface{}) error {
 }
 
 func saveEsportsFile() {
+	client.logger.Info("Saving esports data file.")
 	esports.m.Lock()
 	defer esports.m.Unlock()
 	file, err := json.MarshalIndent(&esports, "", " ")

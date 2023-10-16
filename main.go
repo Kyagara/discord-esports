@@ -69,6 +69,9 @@ func main() {
 		if err != nil {
 			client.logger.Fatal(fmt.Sprintf("error loading esports data: %v", err))
 		}
+
+		esportsUpdateLOLCommand = esports.LastUpdateTimestamp
+		esportsUpdateVALCommand = esports.LastUpdateTimestamp
 	}
 
 	err = client.connect()
