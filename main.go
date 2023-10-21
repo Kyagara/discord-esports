@@ -43,7 +43,7 @@ var (
 	// championsEmbeds[championKey]
 	championsEmbeds map[string]ChampionEmbeds = make(map[string]ChampionEmbeds)
 
-	now      time.Time
+	now      time.Time = time.Now()
 	tomorrow time.Time
 
 	esports EsportsData = EsportsData{VALSchedule: make(map[string][]VALEsportsTournamentSchedule), LOLSchedule: make(map[string][]LOLEsportsLeagueSchedule)}
@@ -88,6 +88,8 @@ func main() {
 		}
 		return
 	}
+
+	tomorrow = time.Date(now.Year(), now.Month(), now.Day()+1, 0, 0, 0, 0, now.Location())
 
 	client.mainLoop()
 }

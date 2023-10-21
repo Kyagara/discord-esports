@@ -216,12 +216,16 @@ func (c *Client) mainLoop() {
 
 	// If first start up
 	if esports.LastPostTimestamp.IsZero() || esports.LastUpdateTimestamp.IsZero() {
+		client.logger.Info("First time running, setting up data.")
+
 		updateEsportsData()
 		postEsportsData()
 
 		update = getTimer(c.config.UpdateDateTimer)
 		post = getTimer(c.config.PostDataTimer)
 	} else {
+		client.logger.Info("Data exist, checking timestamps to resume work.")
+
 		nextUpdateTime := esports.LastUpdateTimestamp.Add(time.Duration(c.config.UpdateDateTimer * int(time.Millisecond)))
 		pastTime, leftForNextUpdate := isPastTime(nextUpdateTime, c.config.UpdateDateTimer)
 
@@ -260,34 +264,36 @@ func (c *Client) mainLoop() {
 			return
 
 		case <-update.C:
+			client.logger.Info("Update tick.")
+
 			if resumeUpdate {
 				updateEsportsData()
 				client.logger.Info("Resetting the Update ticker to specified duration.")
 				update.Reset(time.Duration(c.config.UpdateDateTimer * int(time.Millisecond)))
 				resumeUpdate = false
-				firstUpdate = false
-				continue
 			}
 
 			if !firstUpdate {
 				updateEsportsData()
-				firstUpdate = false
 			}
 
+			firstUpdate = false
+
 		case <-post.C:
+			client.logger.Info("Post tick.")
+
 			if resumePost {
 				postEsportsData()
 				client.logger.Info("Resetting the Post ticker to specified duration.")
 				post.Reset(time.Duration(c.config.PostDataTimer * int(time.Millisecond)))
 				resumePost = false
-				firstPost = false
-				continue
 			}
 
 			if !firstPost {
 				postEsportsData()
-				firstPost = false
 			}
+
+			firstPost = false
 		}
 	}
 }
