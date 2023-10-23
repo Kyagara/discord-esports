@@ -188,6 +188,11 @@ func createLOLMessageEmbed() *discordgo.MessageEmbed {
 			}
 
 			if date.After(now) {
+				if game.TeamA == "TFT" && game.TeamB == "TFT" {
+					output += fmt.Sprintf("<t:%v:R>.\n", date.UnixMilli()/1000)
+					continue
+				}
+
 				output += fmt.Sprintf("%v vs %v, <t:%v:R>.\n", game.TeamA, game.TeamB, date.UnixMilli()/1000)
 			}
 		}

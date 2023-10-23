@@ -204,12 +204,10 @@ func (c *Client) mainLoop() {
 		return
 	}
 
-	var post *time.Ticker
-	var update *time.Ticker
-
-	// Booleans to avoid a race condition with tickers as both of them immediately start
-	firstUpdate := true
-	firstPost := true
+	// These tickers will be Reset() to the appropriate time.Duration, this is to avoid
+	// race conditions caused by both tickers ticking at the same
+	post := time.NewTicker(time.Duration(time.Hour))
+	update := time.NewTicker(time.Duration(time.Hour))
 
 	resumeUpdate := false
 	resumePost := false
@@ -221,8 +219,8 @@ func (c *Client) mainLoop() {
 		updateEsportsData()
 		postEsportsData()
 
-		update = getTimer(c.config.UpdateDateTimer)
-		post = getTimer(c.config.PostDataTimer)
+		resetTicker(update, c.config.UpdateDateTimer)
+		resetTicker(post, c.config.PostDataTimer)
 	} else {
 		client.logger.Info("Data exist, checking timestamps to resume work.")
 
@@ -232,10 +230,10 @@ func (c *Client) mainLoop() {
 		if pastTime {
 			client.logger.Info("Past time to update, updating now.")
 			updateEsportsData()
-			update = getTimer(c.config.UpdateDateTimer)
+			resetTicker(update, c.config.UpdateDateTimer)
 		} else {
 			client.logger.Info(fmt.Sprintf("Time to update still valid, waiting for next update in %v.", leftForNextUpdate.String()))
-			update = time.NewTicker(leftForNextUpdate)
+			update.Reset(leftForNextUpdate)
 			resumeUpdate = true
 		}
 
@@ -245,10 +243,10 @@ func (c *Client) mainLoop() {
 		if pastTime {
 			client.logger.Info("Past time to post, posting now.")
 			postEsportsData()
-			post = getTimer(c.config.PostDataTimer)
+			resetTicker(post, c.config.PostDataTimer)
 		} else {
 			client.logger.Info(fmt.Sprintf("Time to post still valid, waiting for next post in %v.", leftForNextPost.String()))
-			post = time.NewTicker(leftForNextPost)
+			post.Reset(leftForNextPost)
 			resumePost = true
 		}
 	}
@@ -271,13 +269,9 @@ func (c *Client) mainLoop() {
 				client.logger.Info("Resetting the Update ticker to specified duration.")
 				update.Reset(time.Duration(c.config.UpdateDateTimer * int(time.Millisecond)))
 				resumeUpdate = false
-			}
-
-			if !firstUpdate {
+			} else {
 				updateEsportsData()
 			}
-
-			firstUpdate = false
 
 		case <-post.C:
 			client.logger.Info("Post tick.")
@@ -287,19 +281,15 @@ func (c *Client) mainLoop() {
 				client.logger.Info("Resetting the Post ticker to specified duration.")
 				post.Reset(time.Duration(c.config.PostDataTimer * int(time.Millisecond)))
 				resumePost = false
-			}
-
-			if !firstPost {
+			} else {
 				postEsportsData()
 			}
-
-			firstPost = false
 		}
 	}
 }
 
-func getTimer(duration int) *time.Ticker {
-	return time.NewTicker(time.Duration(duration * int(time.Millisecond)))
+func resetTicker(ticker *time.Ticker, duration int) {
+	ticker.Reset(time.Duration(duration * int(time.Millisecond)))
 }
 
 func isPastTime(nextTime time.Time, timerConfiguration int) (bool, time.Duration) {
