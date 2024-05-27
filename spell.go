@@ -16,9 +16,9 @@ type SpellEmbeds struct {
 }
 
 type SpellInfo struct {
-	Index    int
 	Key      string
 	FullName string
+	Index    int
 }
 
 func SpellCommand(session *discordgo.Session, interaction *discordgo.InteractionCreate) {
@@ -111,7 +111,7 @@ func SpellCommand(session *discordgo.Session, interaction *discordgo.Interaction
 	}
 }
 
-func createChampionSpellEmbed(champion *models.Champion, spell *models.ChampionSpell, key string) SpellEmbeds {
+func createChampionSpellEmbed(champion *models.Champion, spell *models.ChampionSpell) SpellEmbeds {
 	description := fmt.Sprintf("[Wiki](%v) - [Video](%v)\n\n", spell.WikiPage, spell.Video)
 	for _, effects := range spell.Effects {
 		description += fmt.Sprintf("%v\n\n", effects.Description)

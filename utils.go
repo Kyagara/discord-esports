@@ -16,7 +16,7 @@ func newRequest(endpoint string) (*http.Request, error) {
 	return req, nil
 }
 
-func hasPermissions(session *discordgo.Session, interaction *discordgo.InteractionCreate) bool {
+func hasPermissions(interaction *discordgo.InteractionCreate) bool {
 	if len(client.config.ModRoles) == 0 {
 		return true
 	}

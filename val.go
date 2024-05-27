@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strconv"
 	"strings"
 	"time"
 
@@ -12,36 +11,33 @@ import (
 )
 
 type VLRGGUpcomingResponse struct {
-	Data struct {
-		Status   int `json:"status"`
-		Segments []struct {
-			Team1          string `json:"team1"`
-			Team2          string `json:"team2"`
-			Flag1          string `json:"flag1"`
-			Flag2          string `json:"flag2"`
-			Score1         string `json:"score1"`
-			Score2         string `json:"score2"`
-			TimeUntilMatch string `json:"time_until_match"`
-			RoundInfo      string `json:"round_info"`
-			TournamentName string `json:"tournament_name"`
-			UnixTimestamp  int    `json:"unix_timestamp"`
-			MatchPage      string `json:"match_page"`
-		} `json:"segments"`
-	} `json:"data"`
+	Data VLRGGUpcomingData `json:"data"`
+}
+
+type VLRGGUpcomingData struct {
+	Segments []VLRGGUpcomingSegments `json:"segments"`
+}
+
+type VLRGGUpcomingSegments struct {
+	Team1         string `json:"team1"`
+	Team2         string `json:"team2"`
+	UnixTimestamp string `json:"unix_timestamp"`
+	Tournament    string `json:"match_event"`
+	Series        string `json:"match_series"`
 }
 
 type VALEsportsTournamentSchedule struct {
-	Tournament string
-	URL        string
-	RoundInfo  string
-	Time       int
 	TeamA      string
 	TeamB      string
+	Time       time.Time
+	Tournament string
+	Series     string
+	URL        string
 }
 
 func updateVALEsportsData() error {
 	http := http.DefaultClient
-	req, err := newRequest("https://vlrggapi.vercel.app/match/upcoming_index")
+	req, err := newRequest("https://vlrggapi.vercel.app/match?q=upcoming")
 	if err != nil {
 		return err
 	}
@@ -59,60 +55,54 @@ func updateVALEsportsData() error {
 		return err
 	}
 
-	var schedule = make(map[string]map[string][]VALEsportsTournamentSchedule)
+	var schedule = make(map[time.Time]map[string][]VALEsportsTournamentSchedule, 10)
 
 	for _, segment := range upcoming.Data.Segments {
+		time, err := time.Parse("2006-01-02 15:04:05", segment.UnixTimestamp)
+		if err != nil {
+			return err
+		}
+
 		gameData := VALEsportsTournamentSchedule{
-			Tournament: segment.TournamentName,
-			RoundInfo:  segment.RoundInfo,
-			Time:       segment.UnixTimestamp,
 			TeamA:      segment.Team1,
-			URL:        segment.MatchPage,
 			TeamB:      segment.Team2,
+			Tournament: segment.Tournament,
+			Series:     segment.Series,
+			Time:       time,
 		}
 
 		if gameData.TeamA == "TBD" && gameData.TeamB == "TBD" {
 			continue
 		}
 
-		date := time.Unix(int64(gameData.Time), 0)
-		realDate := fmt.Sprintf("%v %v %v", date.Year(), int(date.Month()), date.Day())
-
-		if schedule[realDate] == nil {
-			schedule[realDate] = make(map[string][]VALEsportsTournamentSchedule)
+		if schedule[time] == nil {
+			schedule[time] = make(map[string][]VALEsportsTournamentSchedule)
 		}
 
-		tournament := fmt.Sprintf("%v - %v", segment.RoundInfo, segment.TournamentName)
+		tournament := fmt.Sprintf("%v - %v", segment.Tournament, segment.Series)
 
-		if schedule[realDate] != nil && schedule[realDate][tournament] == nil {
-			schedule[realDate][tournament] = make([]VALEsportsTournamentSchedule, 0)
+		if schedule[time] != nil && schedule[time][tournament] == nil {
+			schedule[time][tournament] = make([]VALEsportsTournamentSchedule, 0)
 		}
 
-		schedule[realDate][tournament] = append(schedule[realDate][tournament], gameData)
+		schedule[time][tournament] = append(schedule[time][tournament], gameData)
 	}
 
 	tempSchedule := make(map[string][]VALEsportsTournamentSchedule, 0)
 
-	for dateKey, entries := range schedule {
-		parsedTime, err := time.Parse("2006 1 2", dateKey)
-		if err != nil {
-			client.logger.Error(fmt.Sprintf("Error parsing date key: %v", err))
-			continue
-		}
-
-		if parsedTime.After(tomorrow) {
+	for time, entries := range schedule {
+		if time.After(tomorrow) {
 			continue
 		}
 
 		for tournament, entryList := range entries {
 			for _, item := range entryList {
-				parsedTime := time.Unix(int64(item.Time), 0)
-				if parsedTime.Before(now) {
+				if time.Before(now) {
 					continue
 				}
 
 				if tempSchedule[tournament] == nil {
-					tempSchedule[tournament] = make([]VALEsportsTournamentSchedule, 0)
+					tempSchedule[tournament] = make([]VALEsportsTournamentSchedule, 0, 10)
 				}
 
 				tempSchedule[tournament] = append(tempSchedule[tournament], item)
@@ -140,15 +130,8 @@ func createVALMessageEmbed() *discordgo.MessageEmbed {
 		}
 
 		for _, game := range games {
-			i, err := strconv.ParseInt(fmt.Sprintf("%v", game.Time), 10, 64)
-			if err != nil {
-				client.logger.Error(fmt.Sprintf("Error parsing game time: %v", err))
-				continue
-			}
-
-			date := time.Unix(i, 0)
-			if date.After(now) {
-				output += fmt.Sprintf("%v vs %v, <t:%v:R>.\n", game.TeamA, game.TeamB, date.UnixMilli()/1000)
+			if game.Time.After(now) {
+				output += fmt.Sprintf("%v vs %v, <t:%v:R>.\n", game.TeamA, game.TeamB, game.Time.UnixMilli()/1000)
 			}
 		}
 

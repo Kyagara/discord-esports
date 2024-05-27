@@ -1,16 +1,61 @@
 package main
 
 type WikiChampion struct {
-	ID               int               `json:"id"`
-	Key              string            `json:"key"`
-	Name             string            `json:"name"`
-	Title            string            `json:"title"`
-	Icon             string            `json:"icon"`
-	Resource         string            `json:"resource"`
-	AttackType       string            `json:"attackType"`
-	AdaptiveType     string            `json:"adaptiveType"`
+	Key              string             `json:"key"`
+	Name             string             `json:"name"`
+	Title            string             `json:"title"`
+	Icon             string             `json:"icon"`
+	Resource         string             `json:"resource"`
+	AttackType       string             `json:"attackType"`
+	AdaptiveType     string             `json:"adaptiveType"`
+	ReleaseDate      string             `json:"releaseDate"`
+	ReleasePatch     string             `json:"releasePatch"`
+	PatchLastChanged string             `json:"patchLastChanged"`
+	Lore             string             `json:"lore"`
+	Spells           WikiChampionSpells `json:"abilities"`
+	Roles            []string           `json:"roles"`
+	Skins            []struct {
+		Cost                  any    `json:"cost"`
+		Sale                  any    `json:"sale"`
+		Name                  string `json:"name"`
+		Availability          string `json:"availability"`
+		FormatName            string `json:"formatName"`
+		Distribution          string `json:"distribution"`
+		Rarity                string `json:"rarity"`
+		Lore                  string `json:"lore"`
+		Release               string `json:"release"`
+		SplashPath            string `json:"splashPath"`
+		UncenteredSplashPath  string `json:"uncenteredSplashPath"`
+		TilePath              string `json:"tilePath"`
+		LoadScreenPath        string `json:"loadScreenPath"`
+		LoadScreenVintagePath string `json:"loadScreenVintagePath"`
+		Chromas               []struct {
+			Name         string   `json:"name"`
+			ChromaPath   string   `json:"chromaPath"`
+			Colors       []string `json:"colors"`
+			Descriptions []struct {
+				Description string `json:"description"`
+				Region      string `json:"region"`
+			} `json:"descriptions"`
+			Rarities []struct {
+				Region string `json:"region"`
+				Rarity int    `json:"rarity"`
+			} `json:"rarities"`
+			ID int `json:"id"`
+		} `json:"chromas"`
+		Set           []string `json:"set"`
+		VoiceActor    []string `json:"voiceActor"`
+		SplashArtist  []string `json:"splashArtist"`
+		ID            int      `json:"id"`
+		IsBase        bool     `json:"isBase"`
+		LootEligible  bool     `json:"lootEligible"`
+		NewEffects    bool     `json:"newEffects"`
+		NewAnimations bool     `json:"newAnimations"`
+		NewRecall     bool     `json:"newRecall"`
+		NewVoice      bool     `json:"newVoice"`
+		NewQuotes     bool     `json:"newQuotes"`
+	} `json:"skins"`
 	Stats            WikiChampionStats `json:"stats"`
-	Roles            []string          `json:"roles"`
 	AttributeRatings struct {
 		Damage          int `json:"damage"`
 		Toughness       int `json:"toughness"`
@@ -20,57 +65,12 @@ type WikiChampion struct {
 		AbilityReliance int `json:"abilityReliance"`
 		Difficulty      int `json:"difficulty"`
 	} `json:"attributeRatings"`
-	Spells           WikiChampionSpells `json:"abilities"`
-	ReleaseDate      string             `json:"releaseDate"`
-	ReleasePatch     string             `json:"releasePatch"`
-	PatchLastChanged string             `json:"patchLastChanged"`
-	Price            struct {
+	Price struct {
 		BlueEssence int `json:"blueEssence"`
 		RP          int `json:"rp"`
 		SaleRP      int `json:"saleRp"`
 	} `json:"price"`
-	Lore  string `json:"lore"`
-	Skins []struct {
-		Name         string `json:"name"`
-		ID           int    `json:"id"`
-		IsBase       bool   `json:"isBase"`
-		Availability string `json:"availability"`
-		FormatName   string `json:"formatName"`
-		LootEligible bool   `json:"lootEligible"`
-		Cost         any    `json:"cost"`
-		Sale         any    `json:"sale"`
-		Distribution string `json:"distribution"`
-		Rarity       string `json:"rarity"`
-		Chromas      []struct {
-			Name         string   `json:"name"`
-			ID           int      `json:"id"`
-			ChromaPath   string   `json:"chromaPath"`
-			Colors       []string `json:"colors"`
-			Descriptions []struct {
-				Description string `json:"description"`
-				Region      string `json:"region"`
-			} `json:"descriptions"`
-			Rarities []struct {
-				Rarity int    `json:"rarity"`
-				Region string `json:"region"`
-			} `json:"rarities"`
-		} `json:"chromas"`
-		Lore                  string   `json:"lore"`
-		Release               string   `json:"release"`
-		Set                   []string `json:"set"`
-		SplashPath            string   `json:"splashPath"`
-		UncenteredSplashPath  string   `json:"uncenteredSplashPath"`
-		TilePath              string   `json:"tilePath"`
-		LoadScreenPath        string   `json:"loadScreenPath"`
-		LoadScreenVintagePath string   `json:"loadScreenVintagePath"`
-		NewEffects            bool     `json:"newEffects"`
-		NewAnimations         bool     `json:"newAnimations"`
-		NewRecall             bool     `json:"newRecall"`
-		NewVoice              bool     `json:"newVoice"`
-		NewQuotes             bool     `json:"newQuotes"`
-		VoiceActor            []string `json:"voiceActor"`
-		SplashArtist          []string `json:"splashArtist"`
-	} `json:"skins"`
+	ID int `json:"id"`
 }
 
 type WikiChampionSpells struct {
@@ -130,9 +130,6 @@ type WikiSpellCooldown struct {
 type WikiSpell struct {
 	Name             string            `json:"name"`
 	Icon             string            `json:"icon"`
-	Effects          []WikiSpellEffect `json:"effects"`
-	Cost             WikiSpellCost     `json:"cost"`
-	Cooldown         WikiSpellCooldown `json:"cooldown"`
 	Targeting        string            `json:"targeting"`
 	Affects          string            `json:"affects"`
 	SpellShieldable  string            `json:"spellshieldable"`
@@ -145,7 +142,6 @@ type WikiSpell struct {
 	Notes            string            `json:"notes"`
 	Blurb            string            `json:"blurb"`
 	MissileSpeed     string            `json:"missileSpeed"`
-	RechargeRate     []float64         `json:"rechargeRate"`
 	CollisionRadius  string            `json:"collisionRadius"`
 	TetherRadius     string            `json:"tetherRadius"`
 	OnTargetCDStatic string            `json:"onTargetCdStatic"`
@@ -156,4 +152,8 @@ type WikiSpell struct {
 	CastTime         string            `json:"castTime"`
 	EffectRadius     string            `json:"effectRadius"`
 	TargetRange      string            `json:"targetRange"`
+	Effects          []WikiSpellEffect `json:"effects"`
+	Cost             WikiSpellCost     `json:"cost"`
+	RechargeRate     []float64         `json:"rechargeRate"`
+	Cooldown         WikiSpellCooldown `json:"cooldown"`
 }

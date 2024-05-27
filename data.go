@@ -83,27 +83,27 @@ func loadWikiData() error {
 
 		for i, spell := range champion.Spells.Passive {
 			spellsInfo[champion.Key] = append(spellsInfo[champion.Key], createSpellInfo(&spell, "P", i))
-			spellsEmbeds[champion.Key]["P"] = append(spellsEmbeds[champion.Key]["P"], createChampionSpellEmbed(&champion, &spell, "P"))
+			spellsEmbeds[champion.Key]["P"] = append(spellsEmbeds[champion.Key]["P"], createChampionSpellEmbed(&champion, &spell))
 		}
 
 		for i, spell := range champion.Spells.Q {
 			spellsInfo[champion.Key] = append(spellsInfo[champion.Key], createSpellInfo(&spell, "Q", i))
-			spellsEmbeds[champion.Key]["Q"] = append(spellsEmbeds[champion.Key]["Q"], createChampionSpellEmbed(&champion, &spell, "Q"))
+			spellsEmbeds[champion.Key]["Q"] = append(spellsEmbeds[champion.Key]["Q"], createChampionSpellEmbed(&champion, &spell))
 		}
 
 		for i, spell := range champion.Spells.W {
 			spellsInfo[champion.Key] = append(spellsInfo[champion.Key], createSpellInfo(&spell, "W", i))
-			spellsEmbeds[champion.Key]["W"] = append(spellsEmbeds[champion.Key]["W"], createChampionSpellEmbed(&champion, &spell, "W"))
+			spellsEmbeds[champion.Key]["W"] = append(spellsEmbeds[champion.Key]["W"], createChampionSpellEmbed(&champion, &spell))
 		}
 
 		for i, spell := range champion.Spells.E {
 			spellsInfo[champion.Key] = append(spellsInfo[champion.Key], createSpellInfo(&spell, "E", i))
-			spellsEmbeds[champion.Key]["E"] = append(spellsEmbeds[champion.Key]["E"], createChampionSpellEmbed(&champion, &spell, "E"))
+			spellsEmbeds[champion.Key]["E"] = append(spellsEmbeds[champion.Key]["E"], createChampionSpellEmbed(&champion, &spell))
 		}
 
 		for i, spell := range champion.Spells.R {
 			spellsInfo[champion.Key] = append(spellsInfo[champion.Key], createSpellInfo(&spell, "R", i))
-			spellsEmbeds[champion.Key]["R"] = append(spellsEmbeds[champion.Key]["R"], createChampionSpellEmbed(&champion, &spell, "R"))
+			spellsEmbeds[champion.Key]["R"] = append(spellsEmbeds[champion.Key]["R"], createChampionSpellEmbed(&champion, &spell))
 		}
 
 		championsEmbeds[champion.Key] = createChampionEmbed(&champion)

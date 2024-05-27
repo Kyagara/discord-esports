@@ -11,49 +11,54 @@ import (
 )
 
 type LOLEsportsLeagueResponse struct {
-	Data struct {
-		Leagues []struct {
-			ID              string `json:"id"`
-			Slug            string `json:"slug"`
-			Name            string `json:"name"`
-			Region          string `json:"region"`
-			Image           string `json:"image"`
-			Priority        int    `json:"priority"`
-			DisplayPriority struct {
-				Position int    `json:"position"`
-				Status   string `json:"status"`
-			} `json:"displayPriority"`
-		} `json:"leagues"`
-	} `json:"data"`
+	Data LOLEsportsLeagueData `json:"data"`
+}
+
+type LOLEsportsLeagueData struct {
+	Leagues []LOLEsportsLeague `json:"leagues"`
+}
+
+type LOLEsportsLeague struct {
+	ID string `json:"id"`
 }
 
 type LOLEsportsEventListResponse struct {
-	Data struct {
-		Esports struct {
-			Events []struct {
-				StartTime string `json:"startTime"`
-				Match     struct {
-					Teams []struct {
-						Code  string `json:"code"`
-						Image string `json:"image"`
-					} `json:"teams"`
-				} `json:"match"`
-				League struct {
-					ID   string `json:"id"`
-					Slug string `json:"slug"`
-					Name string `json:"name"`
-				} `json:"league"`
-			} `json:"events"`
-		} `json:"esports"`
-	} `json:"data"`
+	Data LOLEsportsEventData `json:"data"`
+}
+
+type LOLEsportsEventData struct {
+	Esports LOLEsportsEventEsports `json:"esports"`
+}
+
+type LOLEsportsEventEsports struct {
+	Events []LOLEsportsEvent `json:"events"`
+}
+
+type LOLEsportsEvent struct {
+	StartTime string                `json:"startTime"`
+	League    LOLEsportsEventLeague `json:"league"`
+	Match     LOLEsportsEventMatch  `json:"match"`
+}
+
+type LOLEsportsEventLeague struct {
+	Slug string `json:"slug"`
+	Name string `json:"name"`
+}
+
+type LOLEsportsEventMatch struct {
+	Teams []LOLEsportsEventMatchTeam `json:"teams"`
+}
+
+type LOLEsportsEventMatchTeam struct {
+	Code string `json:"code"`
 }
 
 type LOLEsportsLeagueSchedule struct {
-	League string
-	URL    string
-	Time   string
 	TeamA  string
 	TeamB  string
+	League string
+	Time   string
+	URL    string
 }
 
 func updateLOLEsportsData() error {

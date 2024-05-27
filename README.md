@@ -15,14 +15,13 @@ This bot periodically sends information about upcoming League of Legends and Val
 - `news` command for latest val/lol esports news.
 - `recent` command for latest val/lol esports games results.
 - `item` command for lol items.
-- Cache requests to esports apis in a file to avoid requests when starting up unless its past the post time. (Partially complete)
-- Disable button when pressed by a user. (To avoid errors for now, buttons are sent but they are disabled)
+- Disable button when pressed by a user. (To avoid errors for now, buttons sent are disabled)
 
 ## What data does this bot provide and how?
 
 ### Champions and spells (stats, modifiers and notes)
 
-Data from [DataDragon](https://developer.riotgames.com/docs/lol#data-dragon) provided by riot can be sometimes... interesting, take Miss Fortune for example, her ultimate, `Bullet Time`, has apparently a range of 25000, the same range as Ashe's ultimate, a global spell. [CommunityDragon](https://github.com/CommunityDragon/)'s alternative to the DataDragon champion endpoint provides more data, but runs into the same issue in the case of Miss Fortune's ultimate. This leaves the [League of Legends Wiki](https://leagueoflegends.fandom.com/wiki/League_of_Legends_Wiki) as a pretty good source of information.
+Data from [DataDragon](https://developer.riotgames.com/docs/lol#data-dragon) provided by riot can be sometimes... interesting, take Miss Fortune for example, her ultimate, `Bullet Time`, has apparently a range of 25000, the same range as Ashe's ultimate, a global spell. [CommunityDragon](https://github.com/CommunityDragon/)'s alternative to the DataDragon champion endpoint provides more data, but runs into the same issue. This leaves the [League of Legends Wiki](https://leagueoflegends.fandom.com/wiki/League_of_Legends_Wiki) as a pretty good source of information.
 
 Using the [lolstaticdata](https://github.com/meraki-analytics/lolstaticdata) tool to gather data from the wiki and normalizing it for this bot's use case (numbers can be string since it will be thrown into Discord Embeds anyway) and the CommunityDragon's CDN to get links for some static data, we can get some pretty good information, nothing ground breaking or that "discards" a visit to the wiki (which is why we keep links to the wiki everywhere).
 
@@ -41,6 +40,9 @@ For League of Legends, this bot uses the unofficial [LolEsports](https://lolespo
 > Since skins data is not used, you can comment out functions like `__get_skins` to avoid requesting skin data.
 
 This bot requires the data provided from [lolstaticdata](https://github.com/meraki-analytics/lolstaticdata). For now, only champion data is needed, so you can just run `python -m lolstaticdata.champions`.
+
+> [!WARNING]
+> When a new League of Legends patch is out, please try to not constantly update the data, when a new champion is out for example, check if the wiki has enough information on it to justify gathering all data again.
 
 After copying the champions data folder to the root of the project, a champion should have a path like `./data/champions/Aatrox.json`.
 
@@ -68,10 +70,6 @@ If mod_roles is empty, anyone will be able to use the `update` option from the `
 ### Running
 
 Now run the bot with the flag `-register` once, this will **overwrite all guild commands** to the specified guild in the config file, after that you can run the bot without specifying any flag.
-
-## Updating
-
-When a new League of Legends patch is out, just repeat the process of gathering and normalizing the data, please try to not constantly update the data, when a new champion is out for example, check if the wiki has enough information on it to justify gathering all data again.
 
 ## Disclaimer
 

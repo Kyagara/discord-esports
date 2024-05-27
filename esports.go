@@ -23,7 +23,7 @@ func EsportsCommand(session *discordgo.Session, interaction *discordgo.Interacti
 	game := optionMap["game"].StringValue()
 
 	if optionMap["update"] != nil {
-		if !hasPermissions(session, interaction) {
+		if !hasPermissions(interaction) {
 			return
 		}
 

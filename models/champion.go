@@ -2,22 +2,22 @@
 package models
 
 type Champion struct {
-	ID               int      `json:"id"`
-	Key              string   `json:"key"`
-	Name             string   `json:"name"`
-	FullTitle        string   `json:"fullTitle"`
-	Icon             string   `json:"icon"`
-	Lore             string   `json:"lore"`
-	Resource         string   `json:"resource"`
-	AttackType       string   `json:"attackType"`
-	AdaptiveType     string   `json:"adaptiveType"`
-	Roles            []string `json:"roles"`
-	PatchLastChanged string   `json:"patchLastChanged"`
-	OfficialPage     string   `json:"officialPage"`
-	WikiPage         string   `json:"wikiPage"`
 	// ChampionStats also include per level number when available
-	Stats  ChampionStats  `json:"stats"`
-	Spells ChampionSpells `json:"spells"`
+	Stats            ChampionStats  `json:"stats"`
+	Key              string         `json:"key"`
+	Name             string         `json:"name"`
+	FullTitle        string         `json:"fullTitle"`
+	Icon             string         `json:"icon"`
+	Lore             string         `json:"lore"`
+	Resource         string         `json:"resource"`
+	AttackType       string         `json:"attackType"`
+	AdaptiveType     string         `json:"adaptiveType"`
+	PatchLastChanged string         `json:"patchLastChanged"`
+	OfficialPage     string         `json:"officialPage"`
+	WikiPage         string         `json:"wikiPage"`
+	Spells           ChampionSpells `json:"spells"`
+	Roles            []string       `json:"roles"`
+	ID               int            `json:"id"`
 }
 
 type ChampionStats struct {
@@ -46,7 +46,6 @@ type ChampionSpell struct {
 	Icon            string                `json:"icon"`
 	Video           string                `json:"video"`
 	WikiPage        string                `json:"wikiPage"`
-	Effects         []ChampionSpellEffect `json:"effects"`
 	AffectedByCDR   string                `json:"affectedByCDR"`
 	Cost            string                `json:"cost"`
 	Cooldown        string                `json:"cooldown"`
@@ -56,13 +55,14 @@ type ChampionSpell struct {
 	Resource        string                `json:"resource"`
 	DamageType      string                `json:"damageType"`
 	Projectile      string                `json:"projectile"`
-	Notes           []string              `json:"notes"`
 	Speed           string                `json:"speed"`
 	Width           string                `json:"width"`
 	Angle           string                `json:"angle"`
 	CastTime        string                `json:"castTime"`
 	EffectRadius    string                `json:"effectRadius"`
 	TargetRange     string                `json:"targetRange"`
+	Effects         []ChampionSpellEffect `json:"effects"`
+	Notes           []string              `json:"notes"`
 }
 
 type ChampionSpellEffect struct {
